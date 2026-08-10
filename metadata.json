@@ -1,0 +1,5 @@
+{
+  "name": "Script Mage",
+  "description": "A lightweight timeline-based video editor with animations and export capabilities.",
+  "requestFramePermissions": []
+}

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
-import { Settings, Plus, FileVideo, Clock, Trash2, Info, Edit2, Check, Copy } from 'lucide-react';
+import { Settings, Plus, FileVideo, Clock, Trash2, Info, Edit2, Check, Copy, Heart } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { SettingsModal } from './SettingsModal';
 import { AboutModal } from './AboutModal';
+import { DonationModal } from './DonationModal';
 
 interface Project {
   id: string;
@@ -16,6 +17,7 @@ export function ProjectScreen() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [showDonation, setShowDonation] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   
@@ -110,6 +112,9 @@ export function ProjectScreen() {
           <img src="/favicon.ico" alt="Script Mage" className="w-10 h-10 object-contain" />
         </div>
         <div className="flex items-center gap-3">
+          <button onClick={() => setShowDonation(true)} className="w-10 h-10 rounded-full bg-button-bg border border-panel-border flex items-center justify-center text-red-400 hover:text-red-500 hover:bg-button-hover hover:border-red-500/30 transition-all" title="Support the Project">
+            <Heart size={18} fill="currentColor" />
+          </button>
           <button onClick={() => setShowAbout(true)} className="w-10 h-10 rounded-full bg-button-bg border border-panel-border flex items-center justify-center text-text-muted hover:text-text-main hover:bg-button-hover transition-all" title="About">
             <Info size={18} />
           </button>
@@ -206,6 +211,7 @@ export function ProjectScreen() {
 
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
+      {showDonation && <DonationModal onClose={() => setShowDonation(false)} />}
     </div>
   );
 }

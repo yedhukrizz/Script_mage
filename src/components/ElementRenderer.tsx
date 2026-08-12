@@ -83,6 +83,10 @@ export const ElementRenderer: React.FC<{ element: EditorElement }> = ({ element 
     } else if (element.animationIn === 'fade-zoom-out') {
       currentOpacity = baseOpacity * easedProgress;
       currentScale = 1.2 - 0.2 * easedProgress;
+    } else if (element.animationIn === 'fly-in') {
+      currentOpacity = baseOpacity * easedProgress;
+      currentY = element.y - 200 * (1 - easedProgress); // Fly in from top
+      currentScale = 0.5 + 0.5 * easedProgress;
     }
   }
 
@@ -172,6 +176,14 @@ export const ElementRenderer: React.FC<{ element: EditorElement }> = ({ element 
       case 'text':
         const textEffectClass = element.textEffect && element.textEffect !== 'none' ? `effect-${element.textEffect}` : '';
         const fontFamily = element.fontFamily || 'Instrument Sans';
+        
+        let renderedText = element.content;
+        if (element.animationIn === 'typewriter' && currentTime < element.startTime + animDuration && currentTime >= element.startTime) {
+          const progress = (currentTime - element.startTime) / animDuration;
+          const chars = Math.max(0, Math.floor(progress * element.content.length));
+          renderedText = element.content.substring(0, chars);
+        }
+        
         return isEditingText ? (
           <textarea
             ref={textInputRef as any}
@@ -195,7 +207,7 @@ export const ElementRenderer: React.FC<{ element: EditorElement }> = ({ element 
             className={`w-full h-full flex items-center justify-center cursor-text text-center select-none ${textEffectClass}`}
             style={{ color: element.color, fontSize: `${(element.fontSize || 32) * globalTextScale}px`, lineHeight: 1.5, fontWeight: element.fontWeight || 600, fontFamily: `"${fontFamily}", sans-serif` }}
           >
-            <span className="whitespace-pre-wrap break-words w-full" style={{ display: 'block' }}>{element.content}</span>
+            <span className="whitespace-pre-wrap break-words w-full" style={{ display: 'block' }}>{renderedText}</span>
           </div>
         );
       case 'image':

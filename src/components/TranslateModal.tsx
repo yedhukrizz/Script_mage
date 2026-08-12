@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { X, Globe, Loader2, Terminal } from 'lucide-react';
 import { motion } from 'motion/react';
+import { CustomSelect } from './CustomSelect';
 
 interface TranslateModalProps {
   onClose: () => void;
@@ -115,27 +116,26 @@ export function TranslateModal({ onClose }: TranslateModalProps) {
         <div className="p-6 overflow-y-auto min-h-0 space-y-6 flex-1">
           <div className="space-y-2">
             <label className="text-[10px] text-text-muted uppercase font-semibold">Target Language</label>
-            <select 
+            <CustomSelect 
               value={translateLang}
-              onChange={(e) => setTranslateLang(e.target.value)}
-              disabled={isTranslating}
-              className="w-full bg-button-bg border border-panel-border rounded-lg px-3 py-2.5 text-sm text-text-main outline-none focus:border-panel-border disabled:opacity-50"
-            >
-              <option value="es">Spanish</option>
-              <option value="fr">French</option>
-              <option value="de">German</option>
-              <option value="hi">Hindi</option>
-              <option value="ml">Malayalam</option>
-              <option value="ta">Tamil</option>
-              <option value="ja">Japanese</option>
-              <option value="ko">Korean</option>
-              <option value="zh-CN">Chinese (Simplified)</option>
-              <option value="ru">Russian</option>
-              <option value="ar">Arabic</option>
-              <option value="pt">Portuguese</option>
-              <option value="it">Italian</option>
-              <option value="en">English</option>
-            </select>
+              onChange={(val) => setTranslateLang(val)}
+              options={[
+                { value: 'es', label: 'Spanish' },
+                { value: 'fr', label: 'French' },
+                { value: 'de', label: 'German' },
+                { value: 'hi', label: 'Hindi' },
+                { value: 'ml', label: 'Malayalam' },
+                { value: 'ta', label: 'Tamil' },
+                { value: 'ja', label: 'Japanese' },
+                { value: 'ko', label: 'Korean' },
+                { value: 'zh-CN', label: 'Chinese (Simplified)' },
+                { value: 'ru', label: 'Russian' },
+                { value: 'ar', label: 'Arabic' },
+                { value: 'pt', label: 'Portuguese' },
+                { value: 'it', label: 'Italian' },
+                { value: 'en', label: 'English' }
+              ]}
+            />
             <p className="text-xs text-text-muted mt-2">
               This will translate all text elements in your project to the selected language.
               The text-to-speech voice will also be updated to match the target language. Use the Global TTS button to recalculate audio timings.

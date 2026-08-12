@@ -203,7 +203,7 @@ export function TTSModal({ element, onClose }: TTSModalProps) {
           const estimatedDuration = await getRealDuration(element.content, selectedVoiceURI);
           const newEndTime = element.startTime + estimatedDuration;
           
-          const placeholder = elements.find(el => el.isPlaceholder && Math.abs(el.startTime - element.startTime) < 100);
+          const placeholder = elements.find(el => (el.isPlaceholder || el.type === 'image' || el.type === 'video') && Math.abs(el.startTime - element.startTime) < 100);
           
           updateElement(element.id, { 
             ttsVoice: selectedVoiceURI,
@@ -234,7 +234,7 @@ export function TTSModal({ element, onClose }: TTSModalProps) {
           addLog(`Found ${textElsOriginal.length} text elements in timeline.`);
           
           for (const textEl of textElsOriginal) {
-             const ph = elements.find(el => el.isPlaceholder && Math.abs(el.startTime - textEl.startTime) < 100);
+             const ph = elements.find(el => (el.isPlaceholder || el.type === 'image' || el.type === 'video') && Math.abs(el.startTime - textEl.startTime) < 100);
              groups.push({
                text: { ...textEl },
                placeholder: ph ? { ...ph } : null

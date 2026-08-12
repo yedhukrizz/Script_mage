@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { Trash2, Mic, Globe, Move, Type, Image as ImageIcon, Activity, Clock, SlidersHorizontal, Settings2, Play, X } from 'lucide-react';
 import { TTSModal } from './TTSModal';
 import { motion, AnimatePresence } from 'motion/react';
+import { CustomSelect } from './CustomSelect';
 
 const easings = {
   'linear': 'Linear',
@@ -13,6 +14,13 @@ const easings = {
   'elastic-out': 'Elastic Out',
   'bounce-out': 'Bounce Out'
 };
+
+const PALETTE = [
+  '#ffffff', '#000000', '#ef4444', '#f97316', '#f59e0b', '#84cc16', 
+  '#22c55e', '#06b6d4', '#3b82f6', '#6366f1', '#a855f7', '#ec4899',
+  '#f87171', '#fb923c', '#fbbf24', '#a3e635', '#4ade80', '#22d3ee',
+  '#60a5fa', '#818cf8', '#c084fc', '#f472b6'
+];
 
 const fonts = [
   { name: 'Instrument Sans' },
@@ -218,17 +226,17 @@ export function PropertiesPanel() {
                 {(selectedElement.type === 'image' || selectedElement.type === 'video' || selectedElement.isPlaceholder) && (
                   <div className="flex flex-col gap-2 mb-4">
                     <span className="text-xs text-text-muted font-medium px-1">Continuous Effect</span>
-                    <select 
+                    <CustomSelect 
                       value={selectedElement.mediaEffect || 'none'} 
-                      onChange={(e) => handleChange('mediaEffect', e.target.value)}
-                      className="w-full bg-white/10 text-white rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-white/20 appearance-none text-sm font-medium"
-                    >
-                      <option value="none">None</option>
-                      <option value="parallax-slow">Slow Pan (Parallax)</option>
-                      <option value="parallax-fast">Fast Pan</option>
-                      <option value="zoom-in">Slow Zoom In</option>
-                      <option value="zoom-out">Slow Zoom Out</option>
-                    </select>
+                      onChange={(val) => handleChange('mediaEffect', val)}
+                      options={[
+                        { value: 'none', label: 'None' },
+                        { value: 'parallax-slow', label: 'Slow Pan (Parallax)' },
+                        { value: 'parallax-fast', label: 'Fast Pan' },
+                        { value: 'zoom-in', label: 'Slow Zoom In' },
+                        { value: 'zoom-out', label: 'Slow Zoom Out' }
+                      ]}
+                    />
                   </div>
                 )}
               </>
@@ -239,24 +247,33 @@ export function PropertiesPanel() {
                 <div className="flex flex-col gap-2 mb-4">
                   <span className="text-xs text-text-muted font-medium px-1">Color</span>
                   <div className="flex gap-2">
-                    <input type="color" value={selectedElement.color || '#ffffff'} onChange={(e) => handleChange('color', e.target.value)} className="w-10 h-10 rounded-xl cursor-pointer bg-transparent border-0 p-0" />
-                    <input type="text" value={selectedElement.color || '#ffffff'} onChange={(e) => handleChange('color', e.target.value)} className="flex-1 bg-white/10 text-white rounded-xl px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-white/20" />
+                    <input type="color" value={selectedElement.color || '#ffffff'} onChange={(e) => handleChange('color', e.target.value)} className="w-10 h-10 rounded-xl cursor-pointer bg-transparent border-0 p-0 shrink-0" />
+                    <input type="text" value={selectedElement.color || '#ffffff'} onChange={(e) => handleChange('color', e.target.value)} className="flex-1 bg-white/10 text-white rounded-xl px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-white/20 uppercase" />
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {PALETTE.map(c => (
+                      <button 
+                        key={c}
+                        onClick={() => handleChange('color', c)}
+                        className={`w-6 h-6 rounded-full border shadow-sm transition-transform hover:scale-110 active:scale-95 ${selectedElement.color?.toLowerCase() === c.toLowerCase() ? 'border-white scale-110' : 'border-black/20'}`}
+                        style={{ backgroundColor: c }}
+                        title={c}
+                      />
+                    ))}
                   </div>
                 </div>
                 {selectedElement.type === 'text' && (
                   <>
                     <div className="flex flex-col gap-2 mb-4">
                       <span className="text-xs text-text-muted font-medium px-1">Font Family</span>
-                      <select value={selectedElement.fontFamily || 'Inter'} onChange={(e) => handleChange('fontFamily', e.target.value)} className="w-full bg-white/10 text-white rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-white/20 appearance-none text-sm font-medium">
-                        {customFonts.length > 0 && (
-                          <optgroup label="Custom Fonts">
-                            {customFonts.map(font => <option key={`custom-${font}`} value={font}>{font}</option>)}
-                          </optgroup>
-                        )}
-                        <optgroup label="System & Google Fonts">
-                          {fonts.map(f => <option key={f.name} value={f.name}>{f.name}</option>)}
-                        </optgroup>
-                      </select>
+                      <CustomSelect 
+                        value={selectedElement.fontFamily || 'Inter'} 
+                        onChange={(val) => handleChange('fontFamily', val)}
+                        options={[
+                          ...customFonts.map(f => ({ value: f, label: f })),
+                          ...fonts.map(f => ({ value: f.name, label: f.name }))
+                        ]}
+                      />
                     </div>
                     <ThickSlider label="Font Size" value={selectedElement.fontSize || 48} min={12} max={400} step={1} onChange={(v: number) => handleChange('fontSize', v, true)} onChangeStart={handleStart} unit="px" />
                     <ThickSlider label="Font Weight" value={selectedElement.fontWeight || 600} min={100} max={900} step={100} onChange={(v: number) => handleChange('fontWeight', v, true)} onChangeStart={handleStart} />
@@ -269,35 +286,49 @@ export function PropertiesPanel() {
               <>
                 <div className="flex flex-col gap-2 mb-4">
                   <span className="text-xs text-text-muted font-medium px-1">In Animation</span>
-                  <select value={selectedElement.animationIn || 'none'} onChange={(e) => handleChange('animationIn', e.target.value)} className="w-full bg-white/10 text-white rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-white/20 appearance-none text-sm font-medium">
-                    <option value="none">None</option>
-                    <option value="fade">Fade In</option>
-                    <option value="scale">Scale Up</option>
-                    <option value="slide">Slide In</option>
-                    <option value="fade-slide">Fade & Slide</option>
-                    <option value="fade-slide-up">Fade & Slide Up</option>
-                    <option value="zoom-in">Zoom In</option>
-                    <option value="fade-zoom-in">Fade & Zoom In</option>
-                  </select>
+                  <CustomSelect 
+                    value={selectedElement.animationIn || 'none'} 
+                    onChange={(val) => handleChange('animationIn', val)}
+                    options={[
+                      { value: 'none', label: 'None' },
+                      { value: 'fade', label: 'Fade In' },
+                      { value: 'scale', label: 'Scale Up' },
+                      { value: 'slide', label: 'Slide In' },
+                      { value: 'fade-slide', label: 'Fade & Slide' },
+                      { value: 'fade-slide-up', label: 'Fade & Slide Up' },
+                      { value: 'zoom-in', label: 'Zoom In' },
+                      { value: 'fade-zoom-in', label: 'Fade & Zoom In' },
+                      ...(selectedElement.type === 'text' ? [
+                        { value: 'typewriter', label: 'Write Out (Typewriter)' },
+                        { value: 'fly-in', label: 'Fly In (Bounce)' }
+                      ] : [])
+                    ]}
+                  />
                 </div>
                 <div className="flex flex-col gap-2 mb-4">
                   <span className="text-xs text-text-muted font-medium px-1">Out Animation</span>
-                  <select value={selectedElement.animationOut || 'none'} onChange={(e) => handleChange('animationOut', e.target.value)} className="w-full bg-white/10 text-white rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-white/20 appearance-none text-sm font-medium">
-                    <option value="none">None</option>
-                    <option value="fade">Fade Out</option>
-                    <option value="scale">Scale Down</option>
-                    <option value="slide">Slide Out</option>
-                    <option value="fade-slide">Fade & Slide</option>
-                    <option value="fade-slide-up">Fade & Slide Down</option>
-                    <option value="zoom-out">Zoom Out</option>
-                    <option value="fade-zoom-out">Fade & Zoom Out</option>
-                  </select>
+                  <CustomSelect 
+                    value={selectedElement.animationOut || 'none'} 
+                    onChange={(val) => handleChange('animationOut', val)}
+                    options={[
+                      { value: 'none', label: 'None' },
+                      { value: 'fade', label: 'Fade Out' },
+                      { value: 'scale', label: 'Scale Down' },
+                      { value: 'slide', label: 'Slide Out' },
+                      { value: 'fade-slide', label: 'Fade & Slide' },
+                      { value: 'fade-slide-up', label: 'Fade & Slide Down' },
+                      { value: 'zoom-out', label: 'Zoom Out' },
+                      { value: 'fade-zoom-out', label: 'Fade & Zoom Out' }
+                    ]}
+                  />
                 </div>
                 <div className="flex flex-col gap-2 mb-4">
                   <span className="text-xs text-text-muted font-medium px-1">Easing</span>
-                  <select value={selectedElement.easing || 'linear'} onChange={(e) => handleChange('easing', e.target.value)} className="w-full bg-white/10 text-white rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-white/20 appearance-none text-sm font-medium">
-                    {Object.entries(easings).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
-                  </select>
+                  <CustomSelect 
+                    value={selectedElement.easing || 'linear'} 
+                    onChange={(val) => handleChange('easing', val)}
+                    options={Object.entries(easings).map(([key, label]) => ({ value: key, label }))}
+                  />
                 </div>
               </>
             )}

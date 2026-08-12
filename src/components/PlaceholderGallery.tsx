@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { X, Copy, Image as ImageIcon, Video, Upload, Check, Wand2, ChevronDown, Sparkles, Loader2, Mic } from 'lucide-react';
 import { PROMPT_ENHANCERS } from '../lib/promptEnhancers';
 import { motion } from 'motion/react';
+import { CustomSelect } from './CustomSelect';
 
 interface PlaceholderGalleryProps {
   onClose: () => void;
@@ -383,16 +384,18 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
           </div>
           <div className="flex items-center gap-2 flex-1 sm:flex-initial">
             <span className="text-xs sm:text-sm text-text-muted font-medium whitespace-nowrap hidden sm:inline">Placement:</span>
-            <select 
-              value={textPlacement}
-              onChange={(e) => setTextPlacement(e.target.value)}
-              className="bg-button-bg border border-panel-border rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm text-text-main outline-none focus:border-panel-border w-full sm:w-32"
-            >
-              <option value="none">Anywhere</option>
-              <option value="top">Top</option>
-              <option value="center">Center</option>
-              <option value="bottom">Bottom</option>
-            </select>
+            <div className="w-full sm:w-36">
+              <CustomSelect 
+                value={textPlacement}
+                onChange={(val) => setTextPlacement(val)}
+                options={[
+                  { value: 'none', label: 'Anywhere' },
+                  { value: 'top', label: 'Top' },
+                  { value: 'center', label: 'Center' },
+                  { value: 'bottom', label: 'Bottom' }
+                ]}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-2 flex-1 sm:flex-initial relative" ref={enhancersMenuRef}>
             <span className="text-xs sm:text-sm text-text-muted font-medium whitespace-nowrap hidden sm:inline">Enhancers:</span>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useStore } from '../store/useStore';
+import { CustomSelect } from './CustomSelect';
 import { X, Shuffle, Upload, Settings, Copy, Check, ExternalLink, AlertTriangle } from 'lucide-react';
 
 const workerCode = `export default {
@@ -130,53 +131,57 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
       <div className="grid grid-cols-3 gap-4">
         <div className="flex flex-col">
           <label className="text-[10px] text-text-muted uppercase font-semibold mb-1">In</label>
-          <select 
-            value={typeDefaults.animationIn || 'none'} 
-            onChange={(e) => updateDefaults(type, { animationIn: e.target.value })}
-            className="bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border"
-          >
-            <option value="none">None</option>
-            <option value="fade">Fade</option>
-            <option value="slide">Slide</option>
-            <option value="scale">Scale</option>
-            <option value="fade-slide">Fade & Slide</option>
-            <option value="fade-slide-up">Fade & Slide Up</option>
-            <option value="zoom-in">Zoom In</option>
-            <option value="fade-zoom-in">Fade & Zoom In</option>
-            <option value="fade-zoom-out">Fade & Zoom Out</option>
-          </select>
+          <CustomSelect 
+              value={typeDefaults.animationIn || 'none'} 
+              onChange={(val) => updateDefaults(type, { animationIn: val })}
+              options={[
+                  { value: 'none', label: 'None' },
+                  { value: 'fade', label: 'Fade' },
+                  { value: 'slide', label: 'Slide' },
+                  { value: 'scale', label: 'Scale' },
+                  { value: 'fade-slide', label: 'Fade & Slide' },
+                  { value: 'fade-slide-up', label: 'Fade & Slide Up' },
+                  { value: 'zoom-in', label: 'Zoom In' },
+                  { value: 'fade-zoom-in', label: 'Fade & Zoom In' },
+                  { value: 'fade-zoom-out', label: 'Fade & Zoom Out' },
+                  { value: 'typewriter', label: 'Write Out (Typewriter)' },
+                  { value: 'fly-in', label: 'Fly In (Bounce)' }
+                ]}
+            />
         </div>
         <div className="flex flex-col">
           <label className="text-[10px] text-text-muted uppercase font-semibold mb-1">Out</label>
-          <select 
-            value={typeDefaults.animationOut || 'none'} 
-            onChange={(e) => updateDefaults(type, { animationOut: e.target.value })}
-            className="bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border"
-          >
-            <option value="none">None</option>
-            <option value="fade">Fade</option>
-            <option value="slide">Slide</option>
-            <option value="scale">Scale</option>
-            <option value="fade-slide">Fade & Slide</option>
-            <option value="fade-slide-up">Fade & Slide Up</option>
-            <option value="zoom-out">Zoom Out</option>
-            <option value="fade-zoom-in">Fade & Zoom In</option>
-            <option value="fade-zoom-out">Fade & Zoom Out</option>
-          </select>
+          <CustomSelect 
+              value={typeDefaults.animationOut || 'none'} 
+              onChange={(val) => updateDefaults(type, { animationOut: val })}
+              options={[
+                  { value: 'none', label: 'None' },
+                  { value: 'fade', label: 'Fade' },
+                  { value: 'slide', label: 'Slide' },
+                  { value: 'scale', label: 'Scale' },
+                  { value: 'fade-slide', label: 'Fade & Slide' },
+                  { value: 'fade-slide-up', label: 'Fade & Slide Up' },
+                  { value: 'zoom-out', label: 'Zoom Out' },
+                  { value: 'fade-zoom-in', label: 'Fade & Zoom In' },
+                  { value: 'fade-zoom-out', label: 'Fade & Zoom Out' },
+                  { value: 'typewriter', label: 'Write Out (Typewriter)' },
+                  { value: 'fly-in', label: 'Fly In (Bounce)' }
+                ]}
+            />
         </div>
         {type !== 'placeholder' && (
           <div className="flex flex-col">
             <label className="text-[10px] text-text-muted uppercase font-semibold mb-1">Easing</label>
-            <select 
+            <CustomSelect 
               value={typeDefaults.easing || 'linear'} 
-              onChange={(e) => updateDefaults(type, { easing: e.target.value })}
-              className="bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border"
-            >
-              <option value="linear">Linear</option>
-              <option value="ease-in">Ease In</option>
-              <option value="ease-out">Ease Out</option>
-              <option value="ease-in-out">Ease In Out</option>
-            </select>
+              onChange={(val) => updateDefaults(type, { easing: val })}
+              options={[
+                  { value: 'linear', label: 'Linear' },
+                  { value: 'ease-in', label: 'Ease In' },
+                  { value: 'ease-out', label: 'Ease Out' },
+                  { value: 'ease-in-out', label: 'Ease In Out' }
+                ]}
+            />
           </div>
         )}
       </div>
@@ -184,36 +189,36 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
         <div className="grid grid-cols-2 gap-4 mt-4">
           <div className="flex flex-col">
             <label className="text-[10px] text-text-muted uppercase font-semibold mb-1">Default Font</label>
-            <select 
+            <CustomSelect 
               value={typeDefaults.fontFamily || 'Instrument Sans'} 
-              onChange={(e) => updateDefaults('text', { fontFamily: e.target.value })}
-              className="bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border"
-            >
-              <option value="Instrument Sans">Instrument Sans</option>
-              <option value="Inter">Inter</option>
-              <option value="Outfit">Outfit</option>
-              <option value="Space Grotesk">Space Grotesk</option>
-              <option value="JetBrains Mono">JetBrains Mono</option>
-              <option value="Playfair Display">Playfair Display</option>
-              <option value="Anton">Anton</option>
-              <option value="Bebas Neue">Bebas Neue</option>
-              <option value="Oswald">Oswald</option>
-              <option value="Montserrat">Montserrat</option>
-            </select>
+              onChange={(val) => updateDefaults(type, { textEffect: val })}
+              options={[
+                  { value: 'Instrument Sans', label: 'Instrument Sans' },
+                  { value: 'Inter', label: 'Inter' },
+                  { value: 'Outfit', label: 'Outfit' },
+                  { value: 'Space Grotesk', label: 'Space Grotesk' },
+                  { value: 'JetBrains Mono', label: 'JetBrains Mono' },
+                  { value: 'Playfair Display', label: 'Playfair Display' },
+                  { value: 'Anton', label: 'Anton' },
+                  { value: 'Bebas Neue', label: 'Bebas Neue' },
+                  { value: 'Oswald', label: 'Oswald' },
+                  { value: 'Montserrat', label: 'Montserrat' }
+                ]}
+            />
           </div>
           <div className="flex flex-col">
             <label className="text-[10px] text-text-muted uppercase font-semibold mb-1">Default Text Effect</label>
-            <select 
+            <CustomSelect 
               value={typeDefaults.textEffect || 'none'} 
-              onChange={(e) => updateDefaults('text', { textEffect: e.target.value })}
-              className="bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border"
-            >
-              <option value="none">None</option>
-              <option value="bloom">Bloom</option>
-              <option value="shiver">Shiver</option>
-              <option value="flicker">Flicker</option>
-              <option value="neon">Neon</option>
-            </select>
+              onChange={(val) => updateDefaults(type, { fontFamily: val })}
+              options={[
+                  { value: 'none', label: 'None' },
+                  { value: 'bloom', label: 'Bloom' },
+                  { value: 'shiver', label: 'Shiver' },
+                  { value: 'flicker', label: 'Flicker' },
+                  { value: 'neon', label: 'Neon' }
+                ]}
+            />
           </div>
         </div>
       )}
@@ -231,15 +236,15 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
           </div>
           <div className="flex flex-col">
             <label className="text-[10px] text-text-muted uppercase font-semibold mb-1">Continuous Effect</label>
-            <select 
+            <CustomSelect 
               value={typeDefaults.mediaEffect || 'none'} 
-              onChange={(e) => updateDefaults('placeholder', { mediaEffect: e.target.value })}
-              className="bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border"
-            >
-              <option value="none">None</option>
-              <option value="parallax-zoom-in">Parallax Zoom In</option>
-              <option value="parallax-zoom-out">Parallax Zoom Out</option>
-            </select>
+              onChange={(val) => updateDefaults(type, { mediaEffect: val })}
+              options={[
+                  { value: 'none', label: 'None' },
+                  { value: 'parallax-zoom-in', label: 'Parallax Zoom In' },
+                  { value: 'parallax-zoom-out', label: 'Parallax Zoom Out' }
+                ]}
+            />
           </div>
         </div>
       )}
@@ -303,23 +308,23 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col">
                     <label className="text-[10px] text-text-muted uppercase font-semibold mb-1">Background Type</label>
-                    <select 
-                      value={backgroundType} 
-                      onChange={(e) => useStore.getState().setBackgroundType(e.target.value as any)}
-                      className="bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border"
-                    >
-                      <option value="solid">Solid Color</option>
-                      <option value="gradient">Gradient</option>
-                      <option value="animated-gradient">Animated Gradient</option>
-                      <option value="scrolling-grid">Scrolling Grid</option>
-                      <option value="scrolling-dots">Scrolling Dots</option>
-                      <option value="scrolling-lines">Scrolling Lines</option>
-                      <option value="scanning-laser">Scanning Laser</option>
-                      <option value="scrolling-diagonal">Scrolling Diagonal</option>
-                      <option value="pulse-grid">Pulse Grid</option>
-                      <option value="radar-sweep">Radar Sweep</option>
-                      <option value="video">Looping Video</option>
-                    </select>
+                    <CustomSelect 
+              value={backgroundType} 
+              onChange={(val) => setBackgroundType(val as any)}
+              options={[
+                  { value: 'solid', label: 'Solid Color' },
+                  { value: 'gradient', label: 'Gradient' },
+                  { value: 'animated-gradient', label: 'Animated Gradient' },
+                  { value: 'scrolling-grid', label: 'Scrolling Grid' },
+                  { value: 'scrolling-dots', label: 'Scrolling Dots' },
+                  { value: 'scrolling-lines', label: 'Scrolling Lines' },
+                  { value: 'scanning-laser', label: 'Scanning Laser' },
+                  { value: 'scrolling-diagonal', label: 'Scrolling Diagonal' },
+                  { value: 'pulse-grid', label: 'Pulse Grid' },
+                  { value: 'radar-sweep', label: 'Radar Sweep' },
+                  { value: 'video', label: 'Looping Video' }
+                ]}
+            />
                   </div>
 
                   {['animated-gradient', 'scrolling-grid', 'scrolling-dots', 'scrolling-lines', 'scanning-laser', 'scrolling-diagonal', 'pulse-grid', 'radar-sweep'].includes(backgroundType) && (
@@ -443,28 +448,28 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-2">
                         <label className="text-[10px] text-text-muted uppercase font-semibold">Grid Overlay</label>
-                        <select 
-                          value={gridOverlay} 
-                          onChange={(e) => setGridOverlay(e.target.value as any)}
-                          className="bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border"
-                        >
-                          <option value="none">None</option>
-                          <option value="small">Small Grid</option>
-                          <option value="large">Large Grid</option>
-                        </select>
+                        <CustomSelect 
+              value={gridOverlay} 
+              onChange={(val) => setKeylightType(val as any)}
+              options={[
+                  { value: 'none', label: 'None' },
+                  { value: 'small', label: 'Small Grid' },
+                  { value: 'large', label: 'Large Grid' }
+                ]}
+            />
                       </div>
 
                       <div className="flex flex-col gap-2">
                         <label className="text-[10px] text-text-muted uppercase font-semibold">Keylight Direction</label>
-                        <select 
-                          value={keylightType} 
-                          onChange={(e) => setKeylightType(e.target.value as any)}
-                          className="bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border"
-                        >
-                          <option value="none">None</option>
-                          <option value="up">Bottom-Up Keylight</option>
-                          <option value="down">Top-Down Keylight</option>
-                        </select>
+                        <CustomSelect 
+              value={keylightType} 
+              onChange={(val) => useStore.getState().setGridOverlay(val)}
+              options={[
+                  { value: 'none', label: 'None' },
+                  { value: 'up', label: 'Bottom-Up Keylight' },
+                  { value: 'down', label: 'Top-Down Keylight' }
+                ]}
+            />
                       </div>
                     </div>
 
@@ -559,15 +564,15 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
 
                   <div className="flex flex-col gap-2">
                     <label className="text-[10px] text-text-muted uppercase font-semibold">Voice Model</label>
-                    <select
-                      value={geminiModel}
-                      onChange={(e) => setGeminiModel(e.target.value)}
-                      className="bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border w-full"
-                    >
-                      <option value="gemini-3.1-flash-tts-preview">Gemini 3.1 Flash TTS (Cheap & Efficient)</option>
-                      <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro (More Credits, Advanced)</option>
-                      <option value="gemini-3.5-flash">Gemini 3.5 Flash (Standard Text)</option>
-                    </select>
+                    <CustomSelect 
+              value={geminiModel} 
+              onChange={(val) => setGeminiModel(val)}
+              options={[
+                  { value: 'gemini-3.1-flash-tts-preview', label: 'Gemini 3.1 Flash TTS (Cheap & Efficient)' },
+                  { value: 'gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro (More Credits, Advanced)' },
+                  { value: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash (Standard Text)' }
+                ]}
+            />
                   </div>
 
                   <div className="flex items-center gap-2 mt-2">

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Download, Loader2 } from 'lucide-react';
+import { Download, Loader2, Film } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { Muxer, ArrayBufferTarget, FileSystemWritableFileStreamTarget } from 'mp4-muxer';
 import { TTS_VOICES } from '../lib/ttsVoices';
+import { motion, AnimatePresence } from 'motion/react';
 
 export function ExportButton({ className = "flex items-center justify-center w-10 h-10 bg-text-main text-app-bg rounded-full hover:opacity-80 transition-all disabled:opacity-50", iconSize = 18 }: { className?: string, iconSize?: number }) {
   const [isExporting, setIsExporting] = useState(false);
@@ -20,62 +21,98 @@ export function ExportButton({ className = "flex items-center justify-center w-1
   const backgroundSpeed = useStore((state) => state.backgroundSpeed) || 1;
 
   const handleExport = async () => {
-    setIsExporting(true);
-    setProgress(0);
-    setIsPlaying(false);
-    setCurrentTime(0);
+      setIsExporting(true);
+      setProgress(0);
+      setIsPlaying(false);
+      setCurrentTime(0);
 
-    // Wait a tick for canvas to reset
-    await new Promise(resolve => setTimeout(resolve, 100));
+      // Wait a tick for canvas to reset
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-    const renderCanvas = document.getElementById('render-canvas');
-    if (!renderCanvas) {
-      setIsExporting(false);
-      return;
-    }
-
-    // Determine target resolution based on aspect ratio
-    let targetWidth = 1080;
-    let targetHeight = 1080;
-    const [wRatio, hRatio] = canvasAspectRatio.split('/').map(Number);
-    if (wRatio && hRatio) {
-      if (wRatio > hRatio) {
-        targetHeight = 1080;
-        targetWidth = Math.round(1080 * (wRatio / hRatio));
-      } else {
-        targetWidth = 1080;
-        targetHeight = Math.round(1080 * (hRatio / wRatio));
+      const renderCanvas = document.getElementById('render-canvas');
+      if (!renderCanvas) {
+        setIsExporting(false);
+        return;
       }
-    }
 
-    // Ensure even dimensions for video codecs
-    targetWidth = Math.round(targetWidth / 2) * 2;
-    targetHeight = Math.round(targetHeight / 2) * 2;
+      // Determine target resolution based on aspect ratio
+      let targetWidth = 1080;
+      let targetHeight = 1080;
+      const [wRatio, hRatio] = canvasAspectRatio.split('/').map(Number);
+      if (wRatio && hRatio) {
+        if (wRatio > hRatio) {
+          targetHeight = 1080;
+          targetWidth = Math.round(1080 * (wRatio / hRatio));
+        } else {
+          targetWidth = 1080;
+          targetHeight = Math.round(1080 * (hRatio / wRatio));
+        }
+      }
 
-    const hiddenCanvas = document.createElement('canvas');
-    hiddenCanvas.width = targetWidth;
-    hiddenCanvas.height = targetHeight;
-    const ctx = hiddenCanvas.getContext('2d', { willReadFrequently: true });
+      // Ensure even dimensions for video codecs
+      targetWidth = Math.round(targetWidth / 2) * 2;
+      targetHeight = Math.round(targetHeight / 2) * 2;
 
-    if (!ctx) {
-      setIsExporting(false);
-      return;
-    }
+      const hiddenCanvas = document.createElement('canvas');
+      hiddenCanvas.width = targetWidth;
+      hiddenCanvas.height = targetHeight;
+      const ctx = hiddenCanvas.getContext('2d', { willReadFrequently: true });
 
-    const fps = 30;
-    const totalFrames = Math.ceil((duration / 1000) * fps);
-    const frameDuration = 1000 / fps;
+      if (!ctx) {
+        setIsExporting(false);
+        return;
+      }
 
-    let muxer = null;
-    let videoEncoder = null;
-    let audioEncoder = null;
-    const audioCtx = new AudioContext({ sampleRate: 44100 });
-    const bgAudioUrl = useStore.getState().backgroundAudioUrl;
-    const bgAudioVol = useStore.getState().backgroundAudioVolume;
+      const fps = 30;
+      const totalFrames = Math.ceil((duration / 1000) * fps);
+      const frameDuration = 1000 / fps;
 
-    try {
-      // Fetch and decode TTS Audio
-      const audioBuffers: { el?: any, isBg?: boolean, buffer: AudioBuffer }[] = [];
+      let muxer = null;
+      let videoEncoder = null;
+      let audioEncoder = null;
+      const audioCtx = new AudioContext({ sampleRate: 44100 });
+      const bgAudioUrl = useStore.getState().backgroundAudioUrl;
+      const bgAudioVol = useStore.getState().backgroundAudioVolume;
+
+      try {
+        let fileHandle = null;
+        try {
+          if ('showSaveFilePicker' in window) {
+            fileHandle = await (window as any).showSaveFilePicker({
+              suggestedName: 'export.mp4',
+              types: [{ description: 'MP4 Video', accept: { 'video/mp4': ['.mp4'] } }],
+            });
+          }
+        } catch (err: any) {
+          if (err.name === 'AbortError') {
+            setIsExporting(false);
+            return;
+          }
+          console.warn('FilePicker error, falling back to memory target', err);
+        }
+
+        // Preload images
+        const imageCache: Record<string, HTMLImageElement> = {};
+        for (const el of elements) {
+          if (el.type === 'image' && el.content && !imageCache[el.content]) {
+            try {
+              const img = new Image();
+              img.crossOrigin = 'anonymous';
+              const imgPromise = new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+              });
+              img.src = el.content;
+              await imgPromise;
+              imageCache[el.content] = img;
+            } catch (e) {
+              console.error("Failed to load image", el.content);
+            }
+          }
+        }
+
+        // Fetch and decode TTS Audio
+        const audioBuffers: { el?: any, isBg?: boolean, buffer: AudioBuffer }[] = [];
       for (const el of elements) {
         if (el.type === 'text' && el.ttsVoice && el.content.trim()) {
           try {
@@ -127,21 +164,7 @@ export function ExportButton({ className = "flex items-center justify-center w-1
         }
       }
 
-      let fileHandle = null;
-      try {
-        if ('showSaveFilePicker' in window) {
-          fileHandle = await (window as any).showSaveFilePicker({
-            suggestedName: 'export.mp4',
-            types: [{ description: 'MP4 Video', accept: { 'video/mp4': ['.mp4'] } }],
-          });
-        }
-      } catch (err: any) {
-        if (err.name === 'AbortError') {
-          setIsExporting(false);
-          return;
-        }
-        console.warn('FilePicker error, falling back to memory target', err);
-      }
+
 
       let writableStream = null;
       
@@ -261,25 +284,7 @@ export function ExportButton({ className = "flex items-center justify-center w-1
         await audioEncoder.flush();
       }
 
-      // Preload images
-      const imageCache: Record<string, HTMLImageElement> = {};
-      for (const el of elements) {
-        if (el.type === 'image' && el.content && !imageCache[el.content]) {
-          try {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            const imgPromise = new Promise((resolve, reject) => {
-              img.onload = resolve;
-              img.onerror = reject;
-            });
-            img.src = el.content;
-            await imgPromise;
-            imageCache[el.content] = img;
-          } catch (e) {
-            console.error("Failed to load image", el.content);
-          }
-        }
-      }
+
 
       const easingFunctions: Record<string, (t: number) => number> = {
         'linear': t => t,
@@ -441,6 +446,10 @@ export function ExportButton({ className = "flex items-center justify-center w-1
             else if (element.animationIn === 'scale') { currentScale = easedProgress; currentOpacity = element.opacity * easedProgress; }
             else if (element.animationIn === 'fade-slide') { currentOpacity = element.opacity * easedProgress; currentX = element.x - 50 * (1 - easedProgress); }
             else if (element.animationIn === 'fade-slide-up') { currentOpacity = element.opacity * easedProgress; currentY = element.y + 50 * (1 - easedProgress); }
+            else if (element.animationIn === 'zoom-in') currentScale = 0.8 + 0.2 * easedProgress;
+            else if (element.animationIn === 'fade-zoom-in') { currentScale = 0.8 + 0.2 * easedProgress; currentOpacity = element.opacity * easedProgress; }
+            else if (element.animationIn === 'fade-zoom-out') { currentScale = 1.2 - 0.2 * easedProgress; currentOpacity = element.opacity * easedProgress; }
+            else if (element.animationIn === 'fly-in') { currentY = element.y - 200 * (1 - easedProgress); currentScale = 0.5 + 0.5 * easedProgress; currentOpacity = element.opacity * easedProgress; }
           } else if (timeLeft < animDuration && element.animationOut !== 'none') {
             const progress = Math.max(0, timeLeft / animDuration);
             const easedProgress = easingFunctions[element.easing || 'linear']?.(progress) || progress;
@@ -449,6 +458,9 @@ export function ExportButton({ className = "flex items-center justify-center w-1
             else if (element.animationOut === 'scale') { currentScale = easedProgress; currentOpacity = element.opacity * easedProgress; }
             else if (element.animationOut === 'fade-slide') { currentOpacity = element.opacity * easedProgress; currentX = element.x + 50 * (1 - easedProgress); }
             else if (element.animationOut === 'fade-slide-up') { currentOpacity = element.opacity * easedProgress; currentY = element.y - 50 * (1 - easedProgress); }
+            else if (element.animationOut === 'zoom-out') currentScale = 0.8 + 0.2 * easedProgress;
+            else if (element.animationOut === 'fade-zoom-in') { currentScale = 1.2 - 0.2 * easedProgress; currentOpacity = element.opacity * easedProgress; }
+            else if (element.animationOut === 'fade-zoom-out') { currentScale = 0.8 + 0.2 * easedProgress; currentOpacity = element.opacity * easedProgress; }
           }
 
           ctx.save();
@@ -465,6 +477,13 @@ export function ExportButton({ className = "flex items-center justify-center w-1
             ctx.fillStyle = element.color || '#ffffff';
             ctx.fillRect(0, 0, element.width, element.height);
           } else if (element.type === 'text') {
+            let renderedText = element.content;
+            if (element.animationIn === 'typewriter' && timeSinceStart < animDuration) {
+              const progress = timeSinceStart / animDuration;
+              const chars = Math.max(0, Math.floor(progress * element.content.length));
+              renderedText = element.content.substring(0, chars);
+            }
+
             const fontSize = (element.fontSize || 32) * globalTextScale;
             // Text Effects modifying opacity/position before drawing
             let renderOpacity = Math.max(0, Math.min(1, currentOpacity));
@@ -498,7 +517,7 @@ export function ExportButton({ className = "flex items-center justify-center w-1
               ctx.shadowBlur = 0;
             }
             
-            const paragraphs = (element.content || '').split('\n');
+            const paragraphs = (renderedText || '').split('\n');
             const lines: string[] = [];
             const maxWidth = element.width;
             
@@ -538,7 +557,20 @@ export function ExportButton({ className = "flex items-center justify-center w-1
           } else if (element.type === 'image') {
             const img = imageCache[element.content];
             if (img) {
-              ctx.drawImage(img, 0, 0, element.width, element.height);
+              const imgAspect = img.width / img.height;
+              const elAspect = element.width / element.height;
+              let sx = 0, sy = 0, sWidth = img.width, sHeight = img.height;
+
+              if (imgAspect > elAspect) {
+                // Image is wider than element
+                sWidth = img.height * elAspect;
+                sx = (img.width - sWidth) / 2;
+              } else {
+                // Image is taller than element
+                sHeight = img.width / elAspect;
+                sy = (img.height - sHeight) / 2;
+              }
+              ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, element.width, element.height);
             }
           }
 
@@ -589,17 +621,49 @@ export function ExportButton({ className = "flex items-center justify-center w-1
   };
 
   return (
-    <button
-      onClick={handleExport}
-      disabled={isExporting}
-      title="Export Video"
-      className={className}
-    >
-      {isExporting ? (
-        <Loader2 size={iconSize} className="animate-spin" />
-      ) : (
+    <>
+      <button
+        onClick={handleExport}
+        disabled={isExporting}
+        title="Export Video"
+        className={className}
+      >
         <Download size={iconSize} />
-      )}
-    </button>
+      </button>
+
+      <AnimatePresence>
+        {isExporting && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-sm p-4"
+          >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="bg-panel-bg/95 backdrop-blur-2xl border border-white/10 text-text-main w-full max-w-sm rounded-[32px] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] flex flex-col p-8 items-center text-center pointer-events-auto"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-[var(--color-accent)]/20 border border-[var(--color-accent)]/30 flex items-center justify-center text-[var(--color-accent)] shadow-inner mb-6">
+                <Film size={32} className="animate-pulse" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Exporting Video</h3>
+              <p className="text-sm text-text-muted mb-6">Please wait while your video is being rendered. This might take a minute.</p>
+              
+              <div className="w-full bg-black/40 rounded-full h-3 mb-2 overflow-hidden border border-white/5">
+                <div 
+                  className="bg-[var(--color-accent)] h-full transition-all duration-300 ease-out rounded-full"
+                  style={{ width: `${Math.round(progress * 100)}%` }}
+                />
+              </div>
+              <span className="text-sm font-semibold">{Math.round(progress * 100)}%</span>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

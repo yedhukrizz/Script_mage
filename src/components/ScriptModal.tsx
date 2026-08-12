@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   X, Copy, Terminal, Lock, Unlock, Info, Sparkles, 
-  Check, FileText, Sliders, Wand2, ChevronDown, ChevronUp, Palette, Image as ImageIcon
+  Check, FileText, Sliders, Wand2, ChevronDown, ChevronUp, Palette, Image as ImageIcon, Loader2
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { v4 as uuidv4 } from 'uuid';
@@ -33,6 +33,7 @@ export function ScriptModal({ onClose }: { onClose: () => void }) {
   const [lockColor, setLockColor] = useState(false);
   const [lockedColor, setLockedColor] = useState('#ffffff');
   const [requestAiImages, setRequestAiImages] = useState(false);
+  const [uniqueImages, setUniqueImages] = useState(true);
   const [generatePlaceholders, setGeneratePlaceholders] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showEnhancements, setShowEnhancements] = useState(true);
@@ -62,7 +63,9 @@ Example:
 Rules:
 - Keep it to plain text, no markdown.
 - Only output the bracketed script lines, no intro or outro text.
-- Put each clip on a new line.${lockColor ? '\n- DO NOT output a color attribute.' : ''}${requestAiImages ? '\n- For the image property, provide a real, working public image URL (e.g. from Unsplash) relevant to the clip.' : ''}`;
+- Put each clip on a new line.${lockColor ? '\n- DO NOT output a color attribute.' : ''}${requestAiImages ? '\n- For the image property, provide a real, working public image URL (e.g. from Unsplash) relevant to the clip.' : ''}${requestAiImages && uniqueImages ? '\n- DO NOT repeat image URLs. Every image must be completely unique.' : ''}`;
+
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const copyPrompt = () => {
     navigator.clipboard.writeText(aiPrompt);
@@ -77,7 +80,7 @@ Rules:
     addToast('Sample script loaded!', 'info');
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!script.trim()) {
       addToast('Please paste a script first', 'error');
       return;
@@ -113,6 +116,27 @@ Rules:
     if (matches.length === 0) {
       addToast('No valid script clips found. Check formatting!', 'error');
       return;
+    }
+
+    setIsGenerating(true);
+
+    // Preload all images found in the script
+    const imageUrlsToPreload = matches
+      .map((match: any) => match[10])
+      .filter((url: string) => url && url.trim() !== '');
+
+    if (imageUrlsToPreload.length > 0) {
+      addToast(`Preloading ${imageUrlsToPreload.length} images...`, 'info');
+      await Promise.allSettled(
+        imageUrlsToPreload.map(url => {
+          return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = resolve;
+            img.onerror = resolve; // Continue even if one fails
+            img.src = url;
+          });
+        })
+      );
     }
 
     matches.forEach((match: any) => {
@@ -187,6 +211,7 @@ Rules:
       setDuration(maxEndTime);
     }
 
+    setIsGenerating(false);
     addToast(`Successfully added ${matches.length} clips!`, 'success');
     onClose();
   };
@@ -393,18 +418,36 @@ Rules:
                   </div>
 
                   {/* AI Images Toggle */}
-                  <div className="flex items-center justify-between pt-3 border-t border-white/10">
-                    <label className="text-xs font-semibold text-text-main flex items-center gap-1.5">
-                      <ImageIcon size={14} /> 
-                      Request AI Image URLs
-                    </label>
-                    
-                    <button 
-                      onClick={() => setRequestAiImages(!requestAiImages)} 
-                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all border ${requestAiImages ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'bg-white/5 border-white/10 text-text-muted hover:text-text-main'}`}
-                    >
-                      {requestAiImages ? 'Included' : 'Off'}
-                    </button>
+                  <div className="flex flex-col gap-2 pt-3 border-t border-white/10">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-text-main flex items-center gap-1.5">
+                        <ImageIcon size={14} /> 
+                        Request AI Image URLs
+                      </label>
+                      
+                      <button 
+                        onClick={() => setRequestAiImages(!requestAiImages)} 
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all border ${requestAiImages ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'bg-white/5 border-white/10 text-text-muted hover:text-text-main'}`}
+                      >
+                        {requestAiImages ? 'Included' : 'Off'}
+                      </button>
+                    </div>
+                    {requestAiImages && (
+                      <div className="flex items-center justify-between pl-5 pr-1">
+                        <span className="text-[11px] text-text-muted flex items-center gap-1.5">
+                          Unique Images Only
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setUniqueImages(!uniqueImages)}
+                          className="flex items-center gap-2 cursor-pointer text-xs font-medium text-text-main"
+                        >
+                          <div className={`w-8 h-4 rounded-full p-0.5 transition-colors relative ${uniqueImages ? 'bg-[var(--color-accent)]' : 'bg-white/10 border border-white/15'}`}>
+                            <div className={`w-3 h-3 rounded-full bg-white shadow-sm transition-transform ${uniqueImages ? 'translate-x-4' : 'translate-x-0'}`} />
+                          </div>
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* AI Prompt Preview Box */}
@@ -494,10 +537,11 @@ Rules:
                 </button>
                 <button 
                   onClick={handleGenerate} 
-                  className="px-5 py-2.5 bg-[var(--color-accent)] hover:opacity-90 active:scale-[0.99] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-lg flex items-center gap-2"
+                  disabled={isGenerating}
+                  className="px-5 py-2.5 bg-[var(--color-accent)] hover:opacity-90 active:scale-[0.99] disabled:opacity-50 disabled:active:scale-100 text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-lg flex items-center gap-2"
                 >
-                  <Sparkles size={16} />
-                  Generate Clips
+                  {isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                  {isGenerating ? 'Generating...' : 'Generate Clips'}
                 </button>
               </div>
 

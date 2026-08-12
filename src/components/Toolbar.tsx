@@ -447,12 +447,27 @@ export function Toolbar() {
           {/* FONT SUBMENU VIEW */}
           {activeSubMenu === 'font' && (
             <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-1.5 p-3 bg-black/20 rounded-xl border border-white/5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-text-main">Global Font Size</span>
+                  <span className="text-[10px] font-mono text-text-muted">{Math.round(globalTextScale * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="3"
+                  step="0.1"
+                  value={globalTextScale}
+                  onChange={(e) => setGlobalTextScale(parseFloat(e.target.value))}
+                  className="w-full accent-[var(--color-accent)]"
+                />
+              </div>
               <input 
                 type="text" 
                 placeholder="Search fonts..." 
                 value={fontSearch}
                 onChange={(e) => setFontSearch(e.target.value)}
-                className="w-full bg-button-bg border border-panel-border rounded-xl px-3 py-1.5 text-xs text-text-main placeholder:text-text-muted outline-none focus:border-[var(--color-accent)]"
+                className="w-full bg-button-bg border border-panel-border rounded-xl px-3 py-1.5 text-xs text-text-main placeholder:text-text-muted outline-none focus:border-[var(--color-accent)] mt-1"
               />
               <div className="flex flex-col gap-1 max-h-[220px] overflow-y-auto custom-scrollbar pr-0.5">
                 {filteredFonts.map((font) => (

@@ -81,13 +81,13 @@ export function CustomSelect({ value, onChange, options, className = "", placeho
             left: rect.left,
             width: rect.width,
           }}
-          className="bg-panel-bg/95 backdrop-blur-3xl border border-white/20 rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] max-h-64 overflow-y-auto custom-scrollbar flex flex-col p-1.5 pointer-events-auto"
+          className="glass-panel rounded-2xl max-h-64 overflow-y-auto custom-scrollbar flex flex-col p-1.5 pointer-events-auto"
         >
           {options.map((opt) => (
             <button
               key={opt.value}
               onClick={(e) => { e.stopPropagation(); handleSelect(opt.value); }}
-              className={`flex items-center justify-between w-full text-left px-3 py-2.5 rounded-xl text-sm transition-colors ${value === opt.value ? 'bg-[var(--color-accent)]/20 text-[var(--color-accent)] font-semibold' : 'text-text-main hover:bg-white/10'}`}
+              className={`flex items-center justify-between w-full text-left px-3 py-2.5 rounded-xl text-sm transition-colors ${value === opt.value ? 'bg-[var(--color-accent)]/20 text-[var(--color-accent)] font-semibold' : 'text-text-main hover:bg-button-bg hover:bg-button-hover'}`}
             >
               <span>{opt.label}</span>
               {value === opt.value && <Check size={16} />}
@@ -104,7 +104,7 @@ export function CustomSelect({ value, onChange, options, className = "", placeho
       <button
         type="button"
         onClick={handleOpen}
-        className={`w-full flex items-center justify-between bg-white/5 hover:bg-white/10 text-text-main rounded-xl px-4 py-3 outline-none border border-white/10 transition-colors text-sm font-medium ${className}`}
+        className={`w-full flex items-center justify-between bg-button-bg hover:bg-button-bg hover:bg-button-hover text-text-main rounded-xl px-4 py-3 outline-none transition-colors text-sm font-medium ${className}`}
       >
         <span className="flex items-center gap-2 truncate">
           {icon}

@@ -50,7 +50,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="w-16 md:w-64 border-r border-panel-border bg-panel-bg flex flex-col items-center md:items-start py-4 gap-2 shrink-0">
+    <aside className="w-16 md:w-64 glass-panel border-y-0 border-l-0 rounded-r-3xl shadow-[20px_0_40px_var(--color-shadow)] flex flex-col items-center md:items-start py-4 gap-2 shrink-0">
       <div className="px-4 text-xs font-semibold text-text-muted uppercase tracking-wider hidden md:block mb-2">Add Elements</div>
       <button onClick={handleAddText} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-button-bg transition-colors text-text-main hover:text-text-main">
         <Type size={20} />

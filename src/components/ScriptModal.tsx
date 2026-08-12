@@ -54,11 +54,13 @@ export function ScriptModal({ onClose }: { onClose: () => void }) {
 IMPORTANT: Adjust the timing according to the length of the text snippets. Longer text should get more screen time, shorter text should get less time.
 
 Use the following exact format:
-[MM:SS - MM:SS] "Text to display" size=<number>${lockColor ? '' : ' color=<#hex>'}${requestAiImages ? ' image="<public_url>"' : ''}
+[MM:SS - MM:SS] "Text to display" size=<number>${lockColor ? '' : ' color=<#hex>'} effect=<effect>${requestAiImages ? ' image="<public_url>"' : ''}
+
+Available effects: none, write-on, fade-words, fly-words, zoom-words, shiver, flicker, bloom, neon, glitch
 
 Example:
-[00:00 - 0:02] "Welcome to our video" size=80${lockColor ? '' : ' color=#ffffff'}${requestAiImages ? ' image="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1920&q=80"' : ''}
-[00:02 - 0:05] "Subscribe for more" size=120${lockColor ? '' : ' color=#ffcc00'}${requestAiImages ? ' image="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1920&q=80"' : ''}
+[00:00 - 0:02] "Welcome to our video" size=80${lockColor ? '' : ' color=#ffffff'} effect=fly-words${requestAiImages ? ' image="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1920&q=80"' : ''}
+[00:02 - 0:05] "Subscribe for more" size=120${lockColor ? '' : ' color=#ffcc00'} effect=neon${requestAiImages ? ' image="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1920&q=80"' : ''}
 
 Rules:
 - Keep it to plain text, no markdown.
@@ -86,7 +88,7 @@ Rules:
       return;
     }
 
-    const regex = /\[(\d{1,2}):(\d{2})(?:\.(\d+))?\s*-\s*(\d{1,2}):(\d{2})(?:\.(\d+))?\]\s*"([^"]+)"(?:\s+size=(\d+))?(?:\s+color=(#[A-Fa-f0-9]{3,6}))?(?:\s+image=["']?([^"'\s>]+)["']?)?/gi;
+    const regex = /\[(\d{1,2}):(\d{2})(?:\.(\d+))?\s*-\s*(\d{1,2}):(\d{2})(?:\.(\d+))?\]\s*"([^"]+)"(?:\s+size=(\d+))?(?:\s+color=(#[A-Fa-f0-9]{3,6}))?(?:\s+effect=([\w-]+))?(?:\s+image=["']?([^"'\s>]+)["']?)?/gi;
 
     const getCenteredTextProps = () => {
       const cw = canvasAspectRatio === '16/9' ? 1920 : canvasAspectRatio === '9/16' ? 1080 : 1080;
@@ -141,7 +143,7 @@ Rules:
 
     matches.forEach((match: any) => {
       if (match) {
-        const [_, startM, startS, startMs, endM, endS, endMs, text, sizeStr, colorStr, imageUrl] = match;
+        const [_, startM, startS, startMs, endM, endS, endMs, text, sizeStr, colorStr, effectStr, imageUrl] = match;
         
         let startSec = parseInt(startM, 10) * 60 + parseInt(startS, 10);
         let endSec = parseInt(endM, 10) * 60 + parseInt(endS, 10);
@@ -198,7 +200,7 @@ Rules:
           animationOut: defaults.animationOut,
           easing: defaults.easing,
           fontFamily: defaults.fontFamily || 'Instrument Sans',
-          textEffect: defaults.textEffect || 'none',
+          textEffect: effectStr || defaults.textEffect || 'none',
           fontWeight: defaults.fontWeight || 600,
           color,
           fontSize: size,
@@ -222,18 +224,18 @@ Rules:
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 backdrop-blur-xl p-3 sm:p-4 md:p-6"
+      className="fixed inset-0 bg-black/75 flex items-center justify-center z-50  p-3 sm:p-4 md:p-6"
     >
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="bg-panel-bg/85 backdrop-blur-2xl border border-white/10 text-text-main w-full max-w-5xl rounded-2xl sm:rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] flex flex-col my-auto max-h-[92vh] sm:max-h-[88vh] overflow-hidden pointer-events-auto relative"
+        className="glass-panel-heavy text-text-main w-full max-w-5xl rounded-[32px] sm:rounded-[40px] flex flex-col my-auto max-h-[90vh] overflow-hidden pointer-events-auto relative"
       >
         
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-white/10 bg-panel-bg/60 backdrop-blur-md shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-panel-border glass-panel border-x-0 border-t-0 rounded-none shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-[var(--color-accent)]/15 border border-[var(--color-accent)]/30 flex items-center justify-center text-[var(--color-accent)] shadow-sm">
               {mode === 'generate' ? <Sparkles size={18} /> : <Terminal size={18} />}
@@ -251,7 +253,7 @@ Rules:
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowInfo(!showInfo)}
-              className={`p-2 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-all border ${showInfo ? 'bg-[var(--color-accent)]/20 border-[var(--color-accent)]/40 text-[var(--color-accent)] shadow-sm' : 'bg-white/5 hover:bg-white/10 border-white/10 text-text-muted hover:text-text-main'}`}
+              className={`p-2 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-all border ${showInfo ? 'bg-[var(--color-accent)]/20 border-[var(--color-accent)]/40 text-[var(--color-accent)] shadow-sm' : 'bg-button-bg hover:bg-button-bg hover:bg-button-hover border-panel-border text-text-muted hover:text-text-main'}`}
               title="Toggle Instructions"
             >
               <Info size={16} />
@@ -259,7 +261,7 @@ Rules:
             </button>
             <button 
               onClick={onClose} 
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-text-muted hover:text-text-main transition-all"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-button-bg hover:bg-button-bg hover:bg-button-hover flex items-center justify-center text-text-muted hover:text-text-main transition-all"
             >
               <X size={18} />
             </button>
@@ -268,7 +270,7 @@ Rules:
 
         {/* Info Guide Popover / Collapsible */}
         {showInfo && (
-          <div className="bg-panel-bg/90 backdrop-blur-md border-b border-white/10 p-4 sm:p-5 text-xs sm:text-sm text-text-muted animate-in slide-in-from-top-2 duration-200 shrink-0">
+          <div className="glass-panel border-x-0 border-t-0 rounded-none p-4 sm:p-5 text-xs sm:text-sm text-text-muted animate-in slide-in-from-top-2 duration-200 shrink-0">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
                 <Sparkles size={18} className="text-[var(--color-accent)] shrink-0 mt-0.5" />
@@ -302,7 +304,7 @@ Rules:
                       <Wand2 size={14} className="text-[var(--color-accent)]" />
                       Video Topic / Vision
                     </label>
-                    <span className="text-[10px] text-text-muted bg-white/5 px-2.5 py-0.5 rounded-full border border-white/10 backdrop-blur-sm">
+                    <span className="text-[10px] text-text-muted bg-button-bg px-2.5 py-0.5 rounded-full ">
                       Custom Prompt
                     </span>
                   </div>
@@ -311,7 +313,7 @@ Rules:
                     placeholder="e.g. A 15-second promo for a morning routine fitness app with energetic hooks and bold typography..." 
                     value={videoInstruction} 
                     onChange={e => setVideoInstruction(e.target.value)} 
-                    className="w-full h-36 sm:h-44 bg-black/40 border border-white/10 rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm text-text-main outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all resize-none shadow-inner leading-relaxed placeholder:text-text-muted/40 font-sans"
+                    className="w-full h-36 sm:h-44 bg-[var(--theme-input-bg)] rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm text-text-main outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all resize-none shadow-inner leading-relaxed placeholder:text-text-muted/40 font-sans"
                   />
                 </div>
 
@@ -323,7 +325,7 @@ Rules:
                       <button
                         key={idx}
                         onClick={() => setVideoInstruction(idea)}
-                        className="text-[11px] text-left bg-white/5 hover:bg-white/10 border border-white/10 text-text-muted hover:text-text-main px-2.5 py-1.5 rounded-xl transition-all truncate max-w-xs backdrop-blur-sm"
+                        className="text-[11px] text-left bg-button-bg hover:bg-button-bg hover:bg-button-hover text-text-muted hover:text-text-main px-2.5 py-1.5 rounded-xl transition-all truncate max-w-xs "
                       >
                         {idea}
                       </button>
@@ -332,7 +334,7 @@ Rules:
                 </div>
 
                 {/* Tone & Quality Enhancements */}
-                <div className="flex flex-col gap-2.5 pt-3 border-t border-white/10">
+                <div className="flex flex-col gap-2.5 pt-3 border-t border-panel-border">
                   <div className="flex items-center justify-between">
                     <button 
                       onClick={() => setShowEnhancements(!showEnhancements)}
@@ -350,14 +352,14 @@ Rules:
                   </div>
 
                   {showEnhancements && (
-                    <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto p-2 custom-scrollbar bg-black/30 backdrop-blur-md border border-white/10 rounded-2xl">
+                    <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto p-2 custom-scrollbar bg-[var(--theme-input-bg)]  rounded-2xl">
                       {ENHANCEMENTS.map(enh => {
                         const isSelected = enhancements.includes(enh);
                         return (
                           <button 
                             key={enh} 
                             onClick={() => setEnhancements(prev => isSelected ? prev.filter(e => e !== enh) : [...prev, enh])} 
-                            className={`px-2.5 py-1 rounded-xl text-[11px] font-medium transition-all border ${isSelected ? 'bg-[var(--color-accent)] border-[var(--color-accent)] text-white shadow-md shadow-[var(--color-accent)]/20' : 'bg-white/5 border-white/10 text-text-muted hover:text-text-main hover:bg-white/10'}`}
+                            className={`px-2.5 py-1 rounded-xl text-[11px] font-medium transition-all border ${isSelected ? 'bg-[var(--color-accent)] border-[var(--color-accent)] text-white shadow-md shadow-[var(--color-accent)]/20' : 'bg-button-bg border-panel-border text-text-muted hover:text-text-main hover:bg-button-bg hover:bg-button-hover'}`}
                           >
                             {enh}
                           </button>
@@ -369,7 +371,7 @@ Rules:
               </div>
 
               {/* Right Column: Text Color & AI Prompt Output Preview (5 Cols) */}
-              <div className="lg:col-span-5 flex flex-col justify-between gap-4 bg-black/30 backdrop-blur-md border border-white/10 rounded-2xl p-4 shadow-xl">
+              <div className="lg:col-span-5 flex flex-col justify-between gap-4 bg-[var(--theme-input-bg)]  rounded-2xl p-4 shadow-xl">
                 
                 <div className="flex flex-col gap-4">
                   {/* Color Lock Toggle */}
@@ -382,7 +384,7 @@ Rules:
                       
                       <button 
                         onClick={() => setLockColor(!lockColor)} 
-                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all border ${lockColor ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300' : 'bg-white/5 border-white/10 text-text-muted hover:text-text-main'}`}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all border ${lockColor ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300' : 'bg-button-bg border-panel-border text-text-muted hover:text-text-main'}`}
                       >
                         {lockColor ? <Lock size={12} /> : <Unlock size={12} />}
                         {lockColor ? 'Fixed Color' : 'AI Auto-Color'}
@@ -390,7 +392,7 @@ Rules:
                     </div>
 
                     {lockColor && (
-                      <div className="flex flex-col gap-2 p-3 bg-black/40 border border-white/10 rounded-xl animate-in fade-in duration-150">
+                      <div className="flex flex-col gap-2 p-3 bg-[var(--theme-input-bg)] rounded-xl animate-in fade-in duration-150">
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] text-text-muted">Choose Fixed Color:</span>
                           <div className="flex items-center gap-1.5">
@@ -409,7 +411,7 @@ Rules:
                               key={c}
                               onClick={() => setLockedColor(c)}
                               style={{ backgroundColor: c }}
-                              className={`w-6 h-6 rounded-full border transition-transform ${lockedColor === c ? 'scale-110 border-white ring-2 ring-[var(--color-accent)]' : 'border-white/20 hover:scale-105'}`}
+                              className={`w-6 h-6 rounded-full border transition-transform ${lockedColor === c ? 'scale-110 border-white ring-2 ring-[var(--color-accent)]' : 'border-panel-border hover:scale-105'}`}
                             />
                           ))}
                         </div>
@@ -418,7 +420,7 @@ Rules:
                   </div>
 
                   {/* AI Images Toggle */}
-                  <div className="flex flex-col gap-2 pt-3 border-t border-white/10">
+                  <div className="flex flex-col gap-2 pt-3 border-t border-panel-border">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-text-main flex items-center gap-1.5">
                         <ImageIcon size={14} /> 
@@ -427,7 +429,7 @@ Rules:
                       
                       <button 
                         onClick={() => setRequestAiImages(!requestAiImages)} 
-                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all border ${requestAiImages ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'bg-white/5 border-white/10 text-text-muted hover:text-text-main'}`}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all border ${requestAiImages ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'bg-button-bg border-panel-border text-text-muted hover:text-text-main'}`}
                       >
                         {requestAiImages ? 'Included' : 'Off'}
                       </button>
@@ -442,7 +444,7 @@ Rules:
                           onClick={() => setUniqueImages(!uniqueImages)}
                           className="flex items-center gap-2 cursor-pointer text-xs font-medium text-text-main"
                         >
-                          <div className={`w-8 h-4 rounded-full p-0.5 transition-colors relative ${uniqueImages ? 'bg-[var(--color-accent)]' : 'bg-white/10 border border-white/15'}`}>
+                          <div className={`w-8 h-4 rounded-full p-0.5 transition-colors relative ${uniqueImages ? 'bg-[var(--color-accent)]' : 'bg-button-bg hover:bg-button-hover border border-panel-border'}`}>
                             <div className={`w-3 h-3 rounded-full bg-white shadow-sm transition-transform ${uniqueImages ? 'translate-x-4' : 'translate-x-0'}`} />
                           </div>
                         </button>
@@ -465,7 +467,7 @@ Rules:
                         </button>
                       </div>
                     </div>
-                    <pre className="w-full h-36 sm:h-40 bg-black/50 border border-white/10 rounded-2xl p-3 text-[11px] text-text-muted font-mono overflow-y-auto whitespace-pre-wrap custom-scrollbar select-all">
+                    <pre className="w-full h-36 sm:h-40 bg-[var(--theme-input-bg)] rounded-2xl p-3 text-[11px] text-text-muted font-mono overflow-y-auto whitespace-pre-wrap custom-scrollbar select-all">
                       {aiPrompt}
                     </pre>
                   </div>
@@ -480,7 +482,7 @@ Rules:
             <div className="flex flex-col gap-4">
               
               {/* Controls Bar */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-black/30 backdrop-blur-md border border-white/10 p-3.5 rounded-2xl">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[var(--theme-input-bg)]  p-3.5 rounded-2xl">
                 
                 {/* Custom Toggle Switch for Placeholders */}
                 <button
@@ -488,15 +490,15 @@ Rules:
                   onClick={() => setGeneratePlaceholders(!generatePlaceholders)}
                   className="flex items-center gap-2.5 cursor-pointer text-xs font-medium text-text-main group"
                 >
-                  <div className={`w-9 h-5 rounded-full p-0.5 transition-colors relative ${generatePlaceholders ? 'bg-[var(--color-accent)]' : 'bg-white/10 border border-white/15'}`}>
+                  <div className={`w-9 h-5 rounded-full p-0.5 transition-colors relative ${generatePlaceholders ? 'bg-[var(--color-accent)]' : 'bg-button-bg hover:bg-button-hover border border-panel-border'}`}>
                     <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${generatePlaceholders ? 'translate-x-4' : 'translate-x-0'}`} />
                   </div>
                   <span>Generate Media Placeholders</span>
                 </button>
 
-                <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-white/10 pt-2 sm:pt-0">
+                <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-panel-border pt-2 sm:pt-0">
                   <span className="text-xs text-text-muted font-medium">Text Position:</span>
-                  <div className="flex bg-black/40 rounded-xl p-1 border border-white/10">
+                  <div className="flex bg-[var(--theme-input-bg)] rounded-xl p-1 border border-panel-border">
                     {(['top', 'middle', 'bottom'] as const).map(pos => (
                       <button
                         key={pos}
@@ -520,7 +522,7 @@ Rules:
               {/* Text Area */}
               <div className="flex flex-col gap-1">
                 <textarea
-                  className="w-full h-64 sm:h-80 bg-black/40 border border-white/10 rounded-2xl p-4 text-xs sm:text-sm text-text-main font-mono outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all resize-none shadow-inner leading-relaxed custom-scrollbar placeholder:text-text-muted/40"
+                  className="w-full h-64 sm:h-80 bg-[var(--theme-input-bg)] rounded-2xl p-4 text-xs sm:text-sm text-text-main font-mono outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all resize-none shadow-inner leading-relaxed custom-scrollbar placeholder:text-text-muted/40"
                   placeholder={'Paste output from AI here:\n[00:00 - 00:02.5] "Welcome to Script Mage" size=110 color=#ffffff\n[00:02.5 - 00:05] "Create Motion Graphics Fast" size=130 color=#ffcc00'}
                   value={script}
                   onChange={e => setScript(e.target.value)}
@@ -531,7 +533,7 @@ Rules:
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button 
                   onClick={onClose} 
-                  className="px-4 py-2.5 text-xs sm:text-sm font-medium text-text-muted hover:text-text-main border border-white/10 hover:bg-white/5 rounded-xl transition-colors"
+                  className="px-4 py-2.5 text-xs sm:text-sm font-medium text-text-muted hover:text-text-main hover:bg-button-bg rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
@@ -551,7 +553,7 @@ Rules:
 
         {/* Integrated Glassmorphic Footer Bar for Generate Mode (outside scroll area, fixed at modal bottom) */}
         {mode === 'generate' && (
-          <div className="shrink-0 border-t border-white/10 bg-panel-bg/90 backdrop-blur-2xl px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3 z-20">
+          <div className="shrink-0 border-t border-panel-border glass-panel border-x-0 border-b-0 rounded-none px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3 z-20">
             <div className="hidden sm:flex items-center gap-2 text-xs text-text-muted">
               <Sparkles size={15} className="text-[var(--color-accent)] shrink-0" />
               <span>Copy prompt to ChatGPT or Gemini, then switch to <strong>Paste Script</strong>.</span>

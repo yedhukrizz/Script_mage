@@ -19,6 +19,9 @@ export function Timeline() {
   const timelineZoom = useStore((state) => state.timelineZoom);
   const setTimelineZoom = useStore((state) => state.setTimelineZoom);
   const timelineLengthLock = useStore((state) => state.timelineLengthLock);
+  const timelineTrackpadMode = useStore((state) => state.timelineTrackpadMode);
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, scrollLeft: 0, y: 0, scrollTop: 0 });
   const setTimelineLengthLock = useStore((state) => state.setTimelineLengthLock);
 
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -56,6 +59,7 @@ export function Timeline() {
 
   const handleTimelineClick = (e: React.MouseEvent | React.TouchEvent) => {
     if (!timelineRef.current) return;
+    if (timelineTrackpadMode) return;
     const rect = timelineRef.current.getBoundingClientRect();
     let clientX = 0;
     if ('touches' in e) {
@@ -70,7 +74,25 @@ export function Timeline() {
   };
 
   const handleTimelineDrag = (e: MouseEvent | TouchEvent) => {
+    if (timelineTrackpadMode && isPanning && timelineRef.current) {
+       let clientX = 0;
+       let clientY = 0;
+       if ('touches' in e) {
+         clientX = (e as TouchEvent).touches[0].clientX;
+         clientY = (e as TouchEvent).touches[0].clientY;
+       } else {
+         clientX = (e as MouseEvent).clientX;
+         clientY = (e as MouseEvent).clientY;
+       }
+       const dx = clientX - panStart.x;
+       const dy = clientY - panStart.y;
+       timelineRef.current.scrollLeft = panStart.scrollLeft - dx;
+       timelineRef.current.scrollTop = panStart.scrollTop - dy;
+       return;
+    }
+
     if (!isDraggingPlayhead || !timelineRef.current) return;
+    if (timelineTrackpadMode) return;
     const rect = timelineRef.current.getBoundingClientRect();
     let clientX = 0;
     if ('touches' in e) {
@@ -85,19 +107,24 @@ export function Timeline() {
   };
 
   useEffect(() => {
-    if (isDraggingPlayhead) {
+    const handleUp = () => {
+      setIsDraggingPlayhead(false);
+      setIsPanning(false);
+    };
+
+    if (isDraggingPlayhead || isPanning) {
       window.addEventListener('mousemove', handleTimelineDrag);
-      window.addEventListener('mouseup', () => setIsDraggingPlayhead(false));
-      window.addEventListener('touchmove', handleTimelineDrag);
-      window.addEventListener('touchend', () => setIsDraggingPlayhead(false));
+      window.addEventListener('mouseup', handleUp);
+      window.addEventListener('touchmove', handleTimelineDrag, { passive: false });
+      window.addEventListener('touchend', handleUp);
     }
     return () => {
       window.removeEventListener('mousemove', handleTimelineDrag);
-      window.removeEventListener('mouseup', () => setIsDraggingPlayhead(false));
+      window.removeEventListener('mouseup', handleUp);
       window.removeEventListener('touchmove', handleTimelineDrag);
-      window.removeEventListener('touchend', () => setIsDraggingPlayhead(false));
+      window.removeEventListener('touchend', handleUp);
     };
-  }, [isDraggingPlayhead]);
+  }, [isDraggingPlayhead, duration, timelineTrackpadMode, isPanning, panStart]);
 
   // Greedy track assignment
   const tracks = useMemo(() => {
@@ -195,21 +222,31 @@ export function Timeline() {
       <div className="flex-1 min-h-[80px] sm:min-h-[100px] overflow-y-auto relative flex flex-col bg-app-bg">
         <div className="flex flex-1 relative overflow-x-auto overflow-y-auto w-full touch-none" ref={timelineRef} 
         onMouseDown={(e) => {
-          handleTimelineClick(e);
-          setIsDraggingPlayhead(true);
+          if (timelineTrackpadMode) {
+             setIsPanning(true);
+             setPanStart({ x: e.clientX, y: e.clientY, scrollLeft: timelineRef.current?.scrollLeft || 0, scrollTop: timelineRef.current?.scrollTop || 0 });
+          } else {
+             handleTimelineClick(e);
+             setIsDraggingPlayhead(true);
+          }
         }}
         onTouchStart={(e) => {
-          handleTimelineClick(e);
-          setIsDraggingPlayhead(true);
+          if (timelineTrackpadMode) {
+             setIsPanning(true);
+             setPanStart({ x: e.touches[0].clientX, y: e.touches[0].clientY, scrollLeft: timelineRef.current?.scrollLeft || 0, scrollTop: timelineRef.current?.scrollTop || 0 });
+          } else {
+             handleTimelineClick(e);
+             setIsDraggingPlayhead(true);
+          }
         }}>
           {/* Track Headers (Left/Sticky) - removed for generic capcut feel, let's just make clips floating */}
           <div className="absolute inset-0 timeline-bg" style={{ minWidth: `${100 * timelineZoom}%`, width: `${100 * timelineZoom}%`, minHeight: `${Math.max(100, tracks.length * 48 + 48)}px` }}>
             {/* Playhead */}
             <div
-              className="absolute top-0 bottom-0 w-px bg-white z-50 pointer-events-none"
+              className="absolute top-0 bottom-0 w-px bg-text-main z-50 pointer-events-none"
               style={{ left: `${(currentTime / duration) * 100}%` }}
             >
-              <div className="absolute top-0 -translate-x-1/2 rounded-b-md w-3 h-3 bg-white" />
+              <div className="absolute top-0 -translate-x-1/2 rounded-b-md w-3 h-3 bg-text-main" />
             </div>
 
             {/* Grid lines */}
@@ -239,6 +276,7 @@ export function Timeline() {
 }
 
 function TimelineClip({ element, duration }: { element: any, duration: number, key?: string | number }) {
+  const timelineTrackpadMode = useStore(state => state.timelineTrackpadMode);
   const updateElement = useStore(state => state.updateElement);
   const setSelectedElementId = useStore(state => state.setSelectedElementId);
   const selectedElementId = useStore(state => state.selectedElementId);
@@ -264,6 +302,7 @@ function TimelineClip({ element, duration }: { element: any, duration: number, k
   };
 
   const handlePointerDown = (e: React.TouchEvent | React.MouseEvent, type: 'move' | 'start' | 'end') => {
+    if (timelineTrackpadMode) return;
     e.stopPropagation();
     setSelectedElementId(element.id);
     setIsDragging(true);
@@ -282,6 +321,7 @@ function TimelineClip({ element, duration }: { element: any, duration: number, k
 
       const rect = timelineEl.getBoundingClientRect();
       const deltaX = getClientX(e) - startX;
+      e.preventDefault();
       const deltaMs = (deltaX / rect.width) * duration;
 
       if (dragType === 'move') {
@@ -341,7 +381,7 @@ function TimelineClip({ element, duration }: { element: any, duration: number, k
 
   return (
     <div
-      className={`absolute h-8 rounded-md cursor-grab active:cursor-grabbing flex items-center group touch-none ${isSelected ? 'ring-2 ring-white z-20' : 'hover:brightness-110'} ${isActive ? 'brightness-125 shadow-lg shadow-white/10' : ''}`}
+      className={`absolute h-8 rounded-md cursor-grab active:cursor-grabbing flex items-center group touch-none ${isSelected ? 'ring-2 ring-text-main z-20' : 'hover:brightness-110'} ${isActive ? 'brightness-125 shadow-lg shadow-white/10' : ''}`}
       style={{
         left: `${leftPercent}%`,
         width: `${widthPercent}%`,
@@ -357,7 +397,7 @@ function TimelineClip({ element, duration }: { element: any, duration: number, k
           onMouseDown={(e) => handlePointerDown(e, 'start')}
           onTouchStart={(e) => handlePointerDown(e, 'start')}
         >
-          <div className={`w-4 h-full rounded-l-md transition-colors ${isSelected ? 'bg-white' : 'bg-white/50'}`} />
+          <div className={`w-4 h-full rounded-l-md transition-colors ${isSelected ? 'bg-text-main' : 'bg-button-bg opacity-50'}`} />
         </div>
       )}
       
@@ -370,7 +410,7 @@ function TimelineClip({ element, duration }: { element: any, duration: number, k
            <div className="flex items-center gap-2">
              {(element.type === 'image' || element.type === 'video') && (
                <label 
-                 className="cursor-pointer hover:text-white transition-colors flex items-center gap-1 bg-black/20 px-2 py-0.5 rounded flex-shrink-0"
+                 className="cursor-pointer hover:text-text-main transition-colors flex items-center gap-1 bg-black/20 px-2 py-0.5 rounded flex-shrink-0"
                  onMouseDown={(e) => e.stopPropagation()}
                  onTouchStart={(e) => e.stopPropagation()}
                >
@@ -395,7 +435,7 @@ function TimelineClip({ element, duration }: { element: any, duration: number, k
           onMouseDown={(e) => handlePointerDown(e, 'end')}
           onTouchStart={(e) => handlePointerDown(e, 'end')}
         >
-          <div className={`w-4 h-full rounded-r-md transition-colors ${isSelected ? 'bg-white' : 'bg-white/50'}`} />
+          <div className={`w-4 h-full rounded-r-md transition-colors ${isSelected ? 'bg-text-main' : 'bg-button-bg opacity-50'}`} />
         </div>
       )}
     </div>

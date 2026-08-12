@@ -109,7 +109,7 @@ export function ProjectMenu() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ duration: 0.2 }}
-            className="bg-panel-bg/95 backdrop-blur-xl border border-panel-border p-2 rounded-[24px] shadow-2xl mb-2 max-h-[50vh] sm:max-h-[60vh] overflow-y-auto custom-scrollbar max-w-[calc(100vw-2rem)]"
+            className="glass-panel p-2 rounded-[24px] shadow-2xl mb-2 max-h-[50vh] sm:max-h-[60vh] overflow-y-auto custom-scrollbar max-w-[calc(100vw-2rem)]"
           >
           <div className="grid grid-cols-2 gap-1 w-full relative group/tools">
             <button 

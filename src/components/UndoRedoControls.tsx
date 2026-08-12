@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../store/useStore';
-import { Undo2, Redo2, Heart } from 'lucide-react';
+import { Undo2, Redo2, Heart, Hand } from 'lucide-react';
 import { DonationModal } from './DonationModal';
 
 export function UndoRedoControls() {
@@ -8,6 +8,8 @@ export function UndoRedoControls() {
   const redo = useStore(state => state.redo);
   const past = useStore(state => state.past);
   const future = useStore(state => state.future);
+  const timelineTrackpadMode = useStore(state => state.timelineTrackpadMode);
+  const setTimelineTrackpadMode = useStore(state => state.setTimelineTrackpadMode);
   const [showDonation, setShowDonation] = useState(false);
 
   useEffect(() => {
@@ -48,8 +50,15 @@ export function UndoRedoControls() {
           <Redo2 size={24} />
         </button>
         <button 
+          onClick={() => setTimelineTrackpadMode(!timelineTrackpadMode)}
+          className={`w-12 h-12 sm:w-14 sm:h-14 border rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all ml-2 ${timelineTrackpadMode ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]' : 'bg-button-bg text-text-muted border-panel-border hover:bg-button-hover'}`}
+          title={timelineTrackpadMode ? "Disable Timeline Pan (Trackpad Mode)" : "Enable Timeline Pan (Trackpad Mode)"}
+        >
+          <Hand size={24} className={timelineTrackpadMode ? "fill-white/20" : ""} />
+        </button>
+        <button 
           onClick={() => setShowDonation(true)}
-          className="w-12 h-12 sm:w-14 sm:h-14 bg-button-bg text-red-400 border border-panel-border rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all hover:bg-button-hover hover:text-red-500 hover:border-red-500/30 ml-2"
+          className="w-12 h-12 sm:w-14 sm:h-14 bg-button-bg text-red-400 border border-panel-border rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all hover:bg-button-hover hover:text-red-500 hover:border-red-500/30"
           title="Support the Project"
         >
           <Heart size={24} fill="currentColor" />

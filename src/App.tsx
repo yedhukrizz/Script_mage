@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { TTSModal } from './components/TTSModal';
 import { TranslateModal } from './components/TranslateModal';
 import { PlaceholderGallery } from './components/PlaceholderGallery';
+import { TextGallery } from './components/TextGallery';
 import { UndoRedoControls } from './components/UndoRedoControls';
 import { ChevronLeft } from 'lucide-react';
 
@@ -37,6 +38,8 @@ export default function App() {
   const setShowGlobalTranslateModal = useStore((state) => state.setShowGlobalTranslateModal);
   const showPlaceholderGallery = useStore((state) => state.showPlaceholderGallery);
   const setShowPlaceholderGallery = useStore((state) => state.setShowPlaceholderGallery);
+  const showTextGallery = useStore((state) => state.showTextGallery);
+  const setShowTextGallery = useStore((state) => state.setShowTextGallery);
   const elements = useStore((state) => state.elements);
   const currentTime = useStore((state) => state.currentTime);
   const backgroundAudioUrl = useStore((state) => state.backgroundAudioUrl);
@@ -307,7 +310,7 @@ export default function App() {
       </header>
 
       {/* Main Content (Canvas Area) */}
-      <main className="flex-1 min-h-0 bg-app-bg flex items-center justify-center relative p-4 sm:p-12 pb-20 sm:pb-24 group perspective-[1000px] overflow-hidden">
+      <main className="flex-1 min-h-0 bg-app-bg flex items-center justify-center relative p-4 sm:p-8 pb-20 sm:pb-24 group perspective-[1000px] overflow-hidden">
         {backgroundAudioUrl && (
           <audio ref={bgAudioRef} src={backgroundAudioUrl} loop />
         )}
@@ -323,7 +326,7 @@ export default function App() {
           </div>
         )}
         {timelineExpanded && (
-          <div className={`absolute top-16 sm:top-20 bottom-0 inset-x-2 z-40 bg-panel-bg overflow-hidden border-t border-panel-border shadow-[0_-10px_40px_rgba(0,0,0,0.8)] rounded-t-3xl border-x transition-all duration-300 flex flex-col ${
+          <div className={`absolute top-16 sm:top-20 bottom-0 inset-x-2 z-40 glass-panel sm:rounded-t-[32px] rounded-t-2xl overflow-hidden border-b-0 shadow-[0_-20px_40px_var(--color-shadow)] transition-all duration-300 flex flex-col ${
             timelineTransparent ? 'opacity-40 hover:opacity-100 transition-opacity' : 'opacity-100'
           }`}>
             <div className="flex-1 min-h-0 flex flex-col">
@@ -334,7 +337,7 @@ export default function App() {
       </main>
 
       {/* Bottom section (Timeline + Controls) */}
-      <div className={`flex flex-col shrink-0 bg-panel-bg overflow-hidden border-t border-panel-border shadow-[0_-10px_40px_rgba(0,0,0,0.5)] rounded-t-3xl border-x mx-0 sm:mx-2 transition-all duration-300 ${
+      <div className={`flex flex-col shrink-0 glass-panel sm:rounded-t-[32px] rounded-t-2xl overflow-hidden border-b-0 shadow-[0_-20px_40px_var(--color-shadow)] mx-0 transition-all duration-300 ${
         timelineExpanded ? 'hidden' : 'max-h-[65vh] sm:max-h-[50vh]'
       } ${timelineTransparent ? 'opacity-40 hover:opacity-100 transition-opacity' : 'opacity-100'}`}>
         {/* Playback Controls & Timeline */}
@@ -350,19 +353,20 @@ export default function App() {
         {showGlobalTTSModal && <TTSModal onClose={() => setShowGlobalTTSModal(false)} />}
         {showGlobalTranslateModal && <TranslateModal onClose={() => setShowGlobalTranslateModal(false)} />}
         {showPlaceholderGallery && <PlaceholderGallery onClose={() => setShowPlaceholderGallery(false)} />}
+        {showTextGallery && <TextGallery onClose={() => setShowTextGallery(false)} />}
         
         {showUnsavedModal && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/60  z-[100] flex items-center justify-center p-4"
           >
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-panel-bg border border-panel-border rounded-3xl p-8 max-w-sm w-full shadow-2xl flex flex-col gap-6"
+              className="glass-panel-heavy rounded-3xl p-8 max-w-sm w-full flex flex-col gap-6"
             >
               <div>
                 <h3 className="text-xl font-bold text-text-main mb-2">Unsaved Changes</h3>

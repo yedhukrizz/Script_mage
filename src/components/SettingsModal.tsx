@@ -51,7 +51,7 @@ function CloudflareSetupGuide() {
   };
 
   return (
-    <div className="mt-4 p-4 rounded-xl border border-panel-border bg-black/20 text-sm">
+    <div className="mt-4 p-4 rounded-xl bg-black/20 text-sm">
       <h4 className="font-semibold text-text-main mb-2">How to Setup a Free Cloudflare AI Worker</h4>
       <ol className="list-decimal pl-4 text-text-muted space-y-2 mb-4 text-xs">
         <li>Go to your Cloudflare Dashboard and navigate to <strong>Workers & Pages</strong>.</li>
@@ -65,7 +65,7 @@ function CloudflareSetupGuide() {
       <div className="relative group">
         <button
           onClick={handleCopy}
-          className="absolute right-2 top-2 p-1.5 rounded-lg bg-button-bg border border-panel-border hover:bg-button-hover text-text-muted hover:text-text-main transition-colors flex items-center gap-1.5 z-10"
+          className="absolute right-2 top-2 p-1.5 rounded-lg bg-button-bg hover:bg-button-hover text-text-muted hover:text-text-main transition-colors flex items-center gap-1.5 z-10"
           title="Copy code"
         >
           {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
@@ -90,6 +90,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
   const setGlobalTextScale = useStore((state) => state.setGlobalTextScale);
 
   const backgroundType = useStore((state) => state.backgroundType);
+  const setBackgroundType = useStore((state) => state.setBackgroundType);
   const backgroundColor = useStore((state) => state.backgroundColor);
   const backgroundGradient = useStore((state) => state.backgroundGradient);
   const backgroundVideoUrl = useStore((state) => state.backgroundVideoUrl);
@@ -191,7 +192,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
             <label className="text-[10px] text-text-muted uppercase font-semibold mb-1">Default Font</label>
             <CustomSelect 
               value={typeDefaults.fontFamily || 'Instrument Sans'} 
-              onChange={(val) => updateDefaults(type, { textEffect: val })}
+              onChange={(val) => updateDefaults(type, { fontFamily: val })}
               options={[
                   { value: 'Instrument Sans', label: 'Instrument Sans' },
                   { value: 'Inter', label: 'Inter' },
@@ -210,13 +211,18 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
             <label className="text-[10px] text-text-muted uppercase font-semibold mb-1">Default Text Effect</label>
             <CustomSelect 
               value={typeDefaults.textEffect || 'none'} 
-              onChange={(val) => updateDefaults(type, { fontFamily: val })}
+              onChange={(val) => updateDefaults(type, { textEffect: val })}
               options={[
                   { value: 'none', label: 'None' },
-                  { value: 'bloom', label: 'Bloom' },
-                  { value: 'shiver', label: 'Shiver' },
-                  { value: 'flicker', label: 'Flicker' },
-                  { value: 'neon', label: 'Neon' }
+                  { value: 'write-on', label: 'Write On (Typewriter)' },
+                  { value: 'fade-words', label: 'Appearing Words' },
+                  { value: 'fly-words', label: 'Flying Words' },
+                  { value: 'zoom-words', label: 'Zooming Words' },
+                  { value: 'shiver', label: 'Shiver (Continuous)' },
+                  { value: 'flicker', label: 'Flicker (Continuous)' },
+                  { value: 'bloom', label: 'Bloom (Continuous)' },
+                  { value: 'neon', label: 'Neon Glow (Continuous)' },
+                  { value: 'glitch', label: 'Glitch (Continuous)' }
                 ]}
             />
           </div>
@@ -257,20 +263,20 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm p-0 sm:p-6"
+      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50  p-0 sm:p-6"
     >
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="bg-app-bg text-text-main w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-6xl sm:rounded-[32px] flex flex-col pointer-events-auto shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] border border-white/5 relative overflow-hidden"
+        className="glass-panel-heavy text-text-main w-full max-h-[90vh] sm:max-w-6xl rounded-[40px] flex flex-col pointer-events-auto relative overflow-hidden"
       >
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-panel-border shrink-0 bg-app-bg z-10">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-panel-border shrink-0 z-10">
           <div className="font-semibold text-lg tracking-tight shrink-0 flex items-center gap-2 text-text-main">
              Script Mage Settings
            </div>
-          <button onClick={onClose} className="w-10 h-10 rounded-full bg-button-bg border border-panel-border flex items-center justify-center text-text-muted hover:text-text-main hover:bg-button-hover transition-colors">
+          <button onClick={onClose} className="w-10 h-10 rounded-full bg-button-bg flex items-center justify-center text-text-muted hover:text-text-main hover:bg-button-hover transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -362,11 +368,11 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                       </div>
                       <div className="flex gap-2">
                         <input type="color" value={backgroundColor} onChange={(e) => useStore.getState().setBackgroundColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer bg-transparent border-none p-0" />
-                        <input type="text" value={backgroundColor} onChange={(e) => useStore.getState().setBackgroundColor(e.target.value)} className="flex-1 bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main uppercase outline-none focus:border-panel-border" />
+                        <input type="text" value={backgroundColor} onChange={(e) => useStore.getState().setBackgroundColor(e.target.value)} className="flex-1 bg-button-bg rounded px-3 py-2 text-sm text-text-main uppercase outline-none focus:border-panel-border" />
                       </div>
                       <div className="flex gap-2 flex-wrap mt-3">
                         {standardColors.map(c => (
-                          <button key={c} onClick={() => useStore.getState().setBackgroundColor(c)} className="w-6 h-6 rounded-full border border-panel-border hover:scale-110 transition-transform" style={{backgroundColor: c}} title={c} />
+                          <button key={c} onClick={() => useStore.getState().setBackgroundColor(c)} className="w-6 h-6 rounded-full hover:scale-110 transition-transform" style={{backgroundColor: c}} title={c} />
                         ))}
                       </div>
                     </div>
@@ -417,7 +423,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                             const newGradient = [...backgroundGradient];
                             newGradient[activeGradientStop] = c;
                             useStore.getState().setBackgroundGradient(newGradient);
-                          }} className="w-6 h-6 rounded-full border border-panel-border hover:scale-110 transition-transform" style={{backgroundColor: c}} title={c} />
+                          }} className="w-6 h-6 rounded-full hover:scale-110 transition-transform" style={{backgroundColor: c}} title={c} />
                         ))}
                       </div>
                     </div>
@@ -427,7 +433,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                     <div className="flex flex-col gap-2">
                       <label className="text-[10px] text-text-muted uppercase font-semibold mb-1">Video Source (URL or Local File)</label>
                       <div className="flex gap-2 items-center">
-                        <input type="text" value={backgroundVideoUrl} onChange={(e) => useStore.getState().setBackgroundVideoUrl(e.target.value)} placeholder="https://example.com/video.mp4" className="flex-1 bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border" />
+                        <input type="text" value={backgroundVideoUrl} onChange={(e) => useStore.getState().setBackgroundVideoUrl(e.target.value)} placeholder="https://example.com/video.mp4" className="flex-1 bg-button-bg rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border" />
                         <label className="bg-button-bg hover:bg-button-hover text-text-main px-3 h-[38px] rounded text-sm font-medium cursor-pointer transition-colors flex items-center justify-center shrink-0" title="Upload Local Video">
                           <Upload size={16} />
                           <input type="file" accept="video/mp4,video/webm" className="hidden" onChange={(e) => {
@@ -478,11 +484,11 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                         <label className="text-[10px] text-text-muted uppercase font-semibold">Keylight Color</label>
                         <div className="flex gap-2">
                           <input type="color" value={keylightColor} onChange={(e) => setKeylightColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer bg-transparent border-none p-0" />
-                          <input type="text" value={keylightColor} onChange={(e) => setKeylightColor(e.target.value)} className="flex-1 bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main uppercase outline-none focus:border-panel-border" />
+                          <input type="text" value={keylightColor} onChange={(e) => setKeylightColor(e.target.value)} className="flex-1 bg-button-bg rounded px-3 py-2 text-sm text-text-main uppercase outline-none focus:border-panel-border" />
                         </div>
                         <div className="flex gap-2 flex-wrap mt-2">
                           {standardColors.map(c => (
-                            <button key={c} onClick={() => setKeylightColor(c)} className="w-6 h-6 rounded-full border border-panel-border hover:scale-110 transition-transform" style={{backgroundColor: c}} title={c} />
+                            <button key={c} onClick={() => setKeylightColor(c)} className="w-6 h-6 rounded-full hover:scale-110 transition-transform" style={{backgroundColor: c}} title={c} />
                           ))}
                         </div>
                       </div>
@@ -525,7 +531,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                     value={cloudflareWorkerUrl} 
                     onChange={(e) => setCloudflareWorkerUrl(e.target.value)}
                     placeholder="https://your-worker.workers.dev"
-                    className="bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border w-full max-w-full min-w-0"
+                    className="bg-button-bg rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border w-full max-w-full min-w-0"
                   />
                   <p className="text-xs text-text-muted mt-1">
                     Deploy a Cloudflare Worker using Workers AI to generate images for free.
@@ -548,7 +554,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                       value={geminiApiKey} 
                       onChange={(e) => setGeminiApiKey(e.target.value)}
                       placeholder="AIzaSy..."
-                      className="bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border w-full max-w-full min-w-0"
+                      className="bg-button-bg rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border w-full max-w-full min-w-0"
                     />
                     <p className="text-xs text-text-muted mt-1">
                       Required for generating voice and scripts using Gemini. Your key is stored only in your browser.
@@ -597,13 +603,13 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Floating Action Buttons */}
-        <div className="p-4 sm:p-6 bg-panel-bg/95 backdrop-blur border-t border-panel-border flex flex-col sm:flex-row justify-between items-center gap-4 z-20 shrink-0 mt-auto">
+        <div className="p-4 sm:p-6 glass-panel border-x-0 border-b-0 rounded-none flex flex-col sm:flex-row justify-between items-center gap-4 z-20 shrink-0 mt-auto">
           <button 
             onClick={() => {
               useStore.getState().applyDefaultsToProject();
               addToast('Settings applied to current project elements', 'success');
             }} 
-            className="w-full sm:w-auto bg-button-bg hover:bg-button-hover text-text-main px-4 py-2.5 rounded-lg font-semibold transition-all shadow-sm border border-panel-border text-xs uppercase tracking-wider flex items-center justify-center gap-2"
+            className="w-full sm:w-auto bg-button-bg hover:bg-button-hover text-text-main px-4 py-2.5 rounded-lg font-semibold transition-all shadow-sm text-xs uppercase tracking-wider flex items-center justify-center gap-2"
           >
             Apply All Settings to Current Project
           </button>

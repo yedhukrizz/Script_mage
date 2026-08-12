@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
-import { Trash2, Mic, Globe, Move, Type, Image as ImageIcon, Activity, Clock, SlidersHorizontal, Settings2, Play, X } from 'lucide-react';
+import { Trash2, Mic, Globe, Move, Type, Image as ImageIcon, Activity, Clock, SlidersHorizontal, Settings2, Play, X, Sparkles } from 'lucide-react';
 import { TTSModal } from './TTSModal';
 import { motion, AnimatePresence } from 'motion/react';
 import { CustomSelect } from './CustomSelect';
+import { ThickSlider } from './ThickSlider';
+
 
 const easings = {
   'linear': 'Linear',
@@ -57,29 +59,12 @@ const fonts = [
   { name: 'M PLUS 1' }
 ];
 
-const ThickSlider = ({ label, value, min, max, step = 1, onChange, onChangeStart, unit = '' }: any) => (
-  <div className="flex flex-col gap-2 mb-4">
-    <div className="flex justify-between items-center text-xs text-text-muted font-medium px-1">
-      <span>{label}</span>
-      <span className="font-mono text-text-main">{typeof value === 'number' ? Math.round(value * 100) / 100 : value}{unit}</span>
-    </div>
-    <input 
-      type="range" 
-      min={min} 
-      max={max} 
-      step={step} 
-      value={value} 
-      onChange={(e) => onChange(Number(e.target.value))} 
-      onPointerDown={onChangeStart}
-      className="w-full h-6 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md cursor-pointer transition-all active:[&::-webkit-slider-thumb]:scale-90" 
-    />
-  </div>
-);
+
 
 const IconButton = ({ icon: Icon, active, onClick, className = '' }: any) => (
   <button
     onClick={(e) => { e.stopPropagation(); onClick(); }}
-    className={`p-2 sm:p-2.5 rounded-xl transition-all duration-200 flex items-center justify-center ${active ? 'bg-white text-black shadow-md scale-105' : 'text-white hover:bg-white/10 hover:text-white'} ${className}`}
+    className={`p-2 sm:p-2.5 rounded-xl transition-all duration-200 flex items-center justify-center ${active ? 'bg-text-main text-app-bg shadow-md scale-105' : 'text-text-main hover:bg-button-bg hover:bg-button-hover hover:text-text-main'} ${className}`}
   >
     <Icon size={18} strokeWidth={active ? 2.5 : 2} />
   </button>
@@ -186,10 +171,10 @@ export function PropertiesPanel() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="mb-4 bg-[#18181b]/95 backdrop-blur-xl p-5 rounded-[24px] shadow-2xl border border-white/10 w-[340px] max-w-[90vw]"
+            className="mb-4 glass-panel p-5 rounded-[24px] w-[340px] max-w-[90vw]"
           >
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-sm font-semibold text-white capitalize">{activeTab} Properties</h3>
+              <h3 className="text-sm font-semibold text-text-main capitalize">{activeTab} Properties</h3>
             </div>
 
           <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar pointer-events-auto">
@@ -244,11 +229,23 @@ export function PropertiesPanel() {
 
             {activeTab === 'appearance' && hasAppearance && (
               <>
+                {selectedElement.type === 'text' && (
+                  <div className="flex flex-col gap-2 mb-4">
+                    <span className="text-xs text-text-muted font-medium px-1">Text Content</span>
+                    <textarea 
+                      value={selectedElement.content || ''} 
+                      onChange={(e) => handleChange('content', e.target.value)}
+                      className="w-full bg-button-bg border border-panel-border hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] rounded-xl px-3 py-2 text-sm text-text-main resize-none outline-none transition-colors min-h-[80px]"
+                      placeholder="Enter text..."
+                    />
+                  </div>
+                )}
+                
                 <div className="flex flex-col gap-2 mb-4">
                   <span className="text-xs text-text-muted font-medium px-1">Color</span>
                   <div className="flex gap-2">
                     <input type="color" value={selectedElement.color || '#ffffff'} onChange={(e) => handleChange('color', e.target.value)} className="w-10 h-10 rounded-xl cursor-pointer bg-transparent border-0 p-0 shrink-0" />
-                    <input type="text" value={selectedElement.color || '#ffffff'} onChange={(e) => handleChange('color', e.target.value)} className="flex-1 bg-white/10 text-white rounded-xl px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-white/20 uppercase" />
+                    <input type="text" value={selectedElement.color || '#ffffff'} onChange={(e) => handleChange('color', e.target.value)} className="flex-1 bg-button-bg hover:bg-button-hover text-text-main rounded-xl px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-[var(--color-accent)]/50 uppercase" />
                   </div>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {PALETTE.map(c => (
@@ -284,6 +281,31 @@ export function PropertiesPanel() {
 
             {activeTab === 'animation' && (
               <>
+                {selectedElement.type === 'text' && (
+                    <div className="flex flex-col gap-2 mb-4 pb-4 border-b border-panel-border/50">
+                      <div className="flex items-center gap-2 mb-1 px-1">
+                        <Sparkles size={14} className="text-[var(--color-accent)]" />
+                        <span className="text-xs text-text-main font-semibold">Pro Text Effects</span>
+                      </div>
+                      <CustomSelect 
+                        value={selectedElement.textEffect || 'none'} 
+                        onChange={(val) => handleChange('textEffect', val)}
+                        options={[
+                          { value: 'none', label: 'None' },
+                          { value: 'write-on', label: 'Write On (Typewriter)' },
+                          { value: 'fade-words', label: 'Appearing Words' },
+                          { value: 'fly-words', label: 'Flying Words' },
+                          { value: 'zoom-words', label: 'Zooming Words' },
+                          { value: 'shiver', label: 'Shiver (Continuous)' },
+                          { value: 'flicker', label: 'Flicker (Continuous)' },
+                          { value: 'bloom', label: 'Bloom (Continuous)' },
+                          { value: 'neon', label: 'Neon Glow (Continuous)' },
+                          { value: 'glitch', label: 'Glitch (Continuous)' }
+                        ]}
+                      />
+                    </div>
+                )}
+                
                 <div className="flex flex-col gap-2 mb-4">
                   <span className="text-xs text-text-muted font-medium px-1">In Animation</span>
                   <CustomSelect 
@@ -337,7 +359,7 @@ export function PropertiesPanel() {
               <div className="flex flex-col gap-4">
                 <button
                   onClick={() => setShowTTSModal(true)}
-                  className="w-full py-4 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-button-bg hover:bg-button-hover hover:bg-button-hover text-text-main rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
                 >
                   <Mic size={18} /> Edit TTS Voice
                 </button>
@@ -350,13 +372,13 @@ export function PropertiesPanel() {
                   </button>
                 )}
                 
-                <div className="pt-4 border-t border-white/10 flex flex-col gap-2">
+                <div className="pt-4 border-t border-panel-border flex flex-col gap-2">
                    <span className="text-xs text-text-muted font-medium px-1">Translate Text & Audio</span>
                    <div className="flex gap-2">
                      <select 
                        value={translateLang}
                        onChange={(e) => setTranslateLang(e.target.value)}
-                       className="flex-1 bg-white/10 text-white rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-white/20 appearance-none text-sm font-medium"
+                       className="flex-1 bg-button-bg hover:bg-button-hover text-text-main rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-[var(--color-accent)]/50 appearance-none text-sm font-medium"
                      >
                        <option value="es">Spanish</option>
                        <option value="fr">French</option>
@@ -370,7 +392,7 @@ export function PropertiesPanel() {
                      <button 
                        onClick={handleTranslate}
                        disabled={isTranslating}
-                       className="px-4 py-2 bg-white text-black hover:bg-white/90 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                       className="px-4 py-2 bg-text-main text-app-bg hover:opacity-90 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                      >
                        {isTranslating ? '...' : <Globe size={16} />}
                      </button>
@@ -388,7 +410,7 @@ export function PropertiesPanel() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
-        className="flex items-center gap-1 p-1.5 bg-[#18181b]/90 backdrop-blur-xl rounded-[24px] shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-white/10 pointer-events-auto"
+        className="flex items-center gap-1 p-1.5 glass-panel rounded-[24px] pointer-events-auto"
       >
         <IconButton icon={SlidersHorizontal} onClick={() => setActiveTab(activeTab === 'transform' ? null : 'transform')} active={activeTab === 'transform'} />
         {hasAppearance && <IconButton icon={Type} onClick={() => setActiveTab(activeTab === 'appearance' ? null : 'appearance')} active={activeTab === 'appearance'} />}
@@ -397,10 +419,10 @@ export function PropertiesPanel() {
         <IconButton icon={Clock} onClick={() => setActiveTab(activeTab === 'time' ? null : 'time')} active={activeTab === 'time'} />
         {hasTTS && <IconButton icon={Mic} onClick={() => setActiveTab(activeTab === 'tts' ? null : 'tts')} active={activeTab === 'tts'} />}
         
-        <div className="w-px h-6 bg-white/10 mx-1" />
+        <div className="w-px h-6 bg-button-bg hover:bg-button-hover mx-1" />
         
         <IconButton icon={Trash2} onClick={() => removeElement(selectedElement.id)} className="text-red-400 hover:text-red-300 hover:bg-red-500/10" />
-        <IconButton icon={X} onClick={() => setSelectedElementId(null)} className="text-text-muted hover:text-white" />
+        <IconButton icon={X} onClick={() => setSelectedElementId(null)} className="text-text-muted hover:text-text-main" />
       </motion.div>
 
       {showTTSModal && (

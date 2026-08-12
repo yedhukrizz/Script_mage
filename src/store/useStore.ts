@@ -47,12 +47,16 @@ interface EditorState {
   setShowGlobalTranslateModal: (show: boolean) => void;
   showPlaceholderGallery: boolean;
   setShowPlaceholderGallery: (show: boolean) => void;
+  showTextGallery: boolean;
+  setShowTextGallery: (show: boolean) => void;
   showScriptModal: boolean;
   scriptModalMode: 'generate' | 'paste';
   setShowScriptModal: (show: boolean, mode?: 'generate' | 'paste') => void;
   timelineExpanded: boolean;
   setTimelineExpanded: (expanded: boolean) => void;
   timelineTransparent: boolean;
+  timelineTrackpadMode: boolean;
+  setTimelineTrackpadMode: (mode: boolean) => void;
   setTimelineTransparent: (transparent: boolean) => void;
   uiTheme: 'dark' | 'light' | 'black';
   setUiTheme: (theme: 'dark' | 'light' | 'black') => void;
@@ -220,13 +224,17 @@ export const useStore = create<EditorState>((set) => ({
   setShowGlobalTranslateModal: (show) => set({ showGlobalTranslateModal: show }),
   showPlaceholderGallery: false,
   setShowPlaceholderGallery: (show) => set({ showPlaceholderGallery: show }),
+  showTextGallery: false,
+  setShowTextGallery: (show) => set({ showTextGallery: show }),
   showScriptModal: false,
   scriptModalMode: 'generate',
   setShowScriptModal: (show, mode = 'generate') => set({ showScriptModal: show, scriptModalMode: mode }),
   timelineExpanded: false,
   setTimelineExpanded: (expanded) => set({ timelineExpanded: expanded }),
   timelineTransparent: false,
+  timelineTrackpadMode: false,
   setTimelineTransparent: (transparent) => set({ timelineTransparent: transparent }),
+  setTimelineTrackpadMode: (mode) => set({ timelineTrackpadMode: mode }),
   uiTheme: 'dark',
   setUiTheme: (theme) => set({ uiTheme: theme }),
   timelineZoom: 1,

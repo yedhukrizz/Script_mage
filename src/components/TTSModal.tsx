@@ -322,18 +322,18 @@ export function TTSModal({ element, onClose }: TTSModalProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm p-4"
+      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50  p-4"
     >
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="bg-app-bg text-text-main w-full max-w-3xl sm:rounded-[32px] rounded-2xl flex flex-col pointer-events-auto shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] border border-white/5 relative overflow-hidden max-h-[90vh]"
+        className="bg-app-bg text-text-main w-full max-w-3xl rounded-[40px] flex flex-col pointer-events-auto relative overflow-hidden max-h-[90vh]"
       >
         
         <div className="flex flex-col flex-1 min-h-0">
-          <div className="flex items-center justify-between p-4 sm:p-5 border-b border-panel-border shrink-0 bg-app-bg z-10 flex-wrap gap-3">
+          <div className="flex items-center justify-between p-4 sm:p-5 border-b border-panel-border shrink-0 z-10 flex-wrap gap-3">
             <div className="font-semibold text-lg tracking-tight flex items-center gap-2">
               <Mic size={20} className="text-[var(--color-accent)]" /> 
               Voice Selection
@@ -342,7 +342,7 @@ export function TTSModal({ element, onClose }: TTSModalProps) {
                 <button 
                   onClick={handlePreview}
                   disabled={isGenerating}
-                  className="text-xs flex items-center gap-1.5 font-medium bg-button-bg hover:bg-button-hover border border-panel-border px-3 py-1.5 rounded-lg transition-colors text-text-main"
+                  className="text-xs flex items-center gap-1.5 font-medium bg-button-bg hover:bg-button-hover px-3 py-1.5 rounded-lg transition-colors text-text-main"
                 >
                   {isLoadingPreview ? (
                     <>
@@ -363,7 +363,7 @@ export function TTSModal({ element, onClose }: TTSModalProps) {
                     window.speechSynthesis.cancel();
                     onClose();
                   }}
-                  className="w-8 h-8 rounded-full bg-button-bg border border-panel-border flex items-center justify-center text-text-muted hover:text-text-main hover:bg-button-hover transition-colors"
+                  className="w-8 h-8 rounded-full bg-button-bg flex items-center justify-center text-text-muted hover:text-text-main hover:bg-button-hover transition-colors"
                 >
                   <X size={16} />
                 </button>
@@ -421,7 +421,7 @@ export function TTSModal({ element, onClose }: TTSModalProps) {
                   </div>
                 </div>
 
-                <div className="space-y-3 p-4 bg-button-bg/50 border border-panel-border rounded-xl">
+                <div className="space-y-3 p-4 bg-button-bg/50 rounded-xl">
                   <div className="flex justify-between items-center">
                      <label className="text-[10px] text-text-muted uppercase font-semibold tracking-wider">
                       Text
@@ -440,7 +440,7 @@ export function TTSModal({ element, onClose }: TTSModalProps) {
                   <Terminal size={14} />
                   <span className="text-xs font-semibold">Process Logs</span>
                 </div>
-                <div className="border border-panel-border rounded-lg p-3 overflow-y-auto font-mono text-[10px] text-text-muted whitespace-pre-wrap flex-1 custom-scrollbar">
+                <div className="rounded-lg p-3 overflow-y-auto font-mono text-[10px] text-text-muted whitespace-pre-wrap flex-1 custom-scrollbar">
                   {logs.length === 0 ? (
                     <span className="text-text-muted/50">Waiting for process to start...</span>
                   ) : (
@@ -501,7 +501,7 @@ export function TTSModal({ element, onClose }: TTSModalProps) {
                     onClose();
                   }} 
                   disabled={isGenerating}
-                  className="flex-1 py-2.5 rounded-full font-medium transition-colors bg-button-bg border border-panel-border text-text-main hover:bg-button-hover disabled:opacity-50"
+                  className="flex-1 py-2.5 rounded-full font-medium transition-colors bg-button-bg text-text-main hover:bg-button-hover disabled:opacity-50"
                 >
                   Cancel
                 </button>

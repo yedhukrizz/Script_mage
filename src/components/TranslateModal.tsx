@@ -91,7 +91,7 @@ export function TranslateModal({ onClose }: TranslateModalProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4"
+      className="fixed inset-0 bg-black/60  flex justify-center items-center z-50 p-4"
     >
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 10 }}

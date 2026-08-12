@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { X, Copy, Image as ImageIcon, Video, Upload, Check, Wand2, ChevronDown, Sparkles, Loader2, Mic } from 'lucide-react';
 import { PROMPT_ENHANCERS } from '../lib/promptEnhancers';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { CustomSelect } from './CustomSelect';
 
 interface PlaceholderGalleryProps {
@@ -26,15 +26,21 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
   const [textPlacement, setTextPlacement] = useState('none');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showEnhancersMenu, setShowEnhancersMenu] = useState(false);
+  const [showBulkMenu, setShowBulkMenu] = useState(false);
+  const bulkMenuRef = useRef<HTMLDivElement>(null);
   const enhancersMenuRef = useRef<HTMLDivElement>(null);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [cfGeneratingId, setCfGeneratingId] = useState<string | null>(null);
+  const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
   const [geminiGeneratingId, setGeminiGeneratingId] = useState<string | null>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (enhancersMenuRef.current && !enhancersMenuRef.current.contains(event.target as Node)) {
         setShowEnhancersMenu(false);
+      }
+      if (bulkMenuRef.current && !bulkMenuRef.current.contains(event.target as Node)) {
+        setShowBulkMenu(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -78,7 +84,8 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
     });
   }, [elements]);
 
-  const handleCopyPrompt = (text: string, id: string) => {
+
+  const getEnhancedPrompt = (text: string) => {
     let tags = [];
     if (textPlacement !== 'none') {
       tags.push(`Leave empty space at the ${textPlacement} for text`);
@@ -94,7 +101,15 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
     const tagsStr = tags.length > 0 ? tags.join(', ') : '';
     const formattedRatio = canvasAspectRatio.replace('/', ':');
     
-    const prompt = `Subject: '${text}', Aspect ratio: '${formattedRatio}', Important instructions: '${tagsStr}'`;
+    const basePrompt = `Create a high-quality, masterpiece visual. Core subject: "${text}".`;
+    const stylePrompt = tagsStr ? ` Visual Style and Enhancers: ${tagsStr}.` : '';
+    const technicalPrompt = ` Aspect ratio: ${formattedRatio}. Ensure perfect composition, professional cinematic lighting, and extreme detail.`;
+    
+    return `${basePrompt}${stylePrompt}${technicalPrompt}`;
+  };
+
+  const handleCopyPrompt = (text: string, id: string) => {
+    const prompt = getEnhancedPrompt(text);
     
     navigator.clipboard.writeText(prompt);
     setCopiedId(id);
@@ -110,20 +125,7 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
     
     setGeneratingId(id);
     
-    let tags = [];
-    if (textPlacement !== 'none') {
-      tags.push(`Leave empty space at the ${textPlacement} for text`);
-    }
-    if (selectedEnhancers.length > 0) {
-      tags = [...tags, ...selectedEnhancers];
-    }
-    if (!tags.some(t => t.toLowerCase().includes('no text'))) {
-      tags.push('Strictly no text, no watermarks, no logos');
-    }
-    const tagsStr = tags.length > 0 ? tags.join(', ') : '';
-    const formattedRatio = canvasAspectRatio.replace('/', ':');
-    
-    const prompt = `Subject: '${text}', Aspect ratio: '${formattedRatio}', Important instructions: '${tagsStr}'`;
+    const prompt = getEnhancedPrompt(text);
 
     try {
       const imageElement = await (window as any).puter.ai.txt2img(prompt, { model: 'nano-banana' });
@@ -153,20 +155,7 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
     
     setCfGeneratingId(id);
     
-    let tags = [];
-    if (textPlacement !== 'none') {
-      tags.push(`Leave empty space at the ${textPlacement} for text`);
-    }
-    if (selectedEnhancers.length > 0) {
-      tags = [...tags, ...selectedEnhancers];
-    }
-    if (!tags.some(t => t.toLowerCase().includes('no text'))) {
-      tags.push('Strictly no text, no watermarks, no logos');
-    }
-    const tagsStr = tags.length > 0 ? tags.join(', ') : '';
-    const formattedRatio = canvasAspectRatio.replace('/', ':');
-    
-    const prompt = `Subject: '${text}', Aspect ratio: '${formattedRatio}', Important instructions: '${tagsStr}'`;
+    const prompt = getEnhancedPrompt(text);
 
     try {
       const response = await fetch(cloudflareWorkerUrl, {
@@ -335,7 +324,7 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 bg-black/90 backdrop-blur-md flex flex-col z-[100]"
+      className="fixed inset-0 bg-black/90  flex flex-col z-[100]"
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4 sm:p-6 border-b border-panel-border bg-app-bg shrink-0 flex-wrap gap-4">
@@ -356,31 +345,39 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
         </div>
         
         <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto flex-wrap">
-          <div className="flex flex-wrap items-center gap-2 flex-1 sm:flex-initial">
+                    <div className="flex flex-wrap items-center gap-2 flex-1 sm:flex-initial relative" ref={bulkMenuRef}>
             <button
-              onClick={() => handleBulkGenerate('cloudflare')}
+              onClick={() => setShowBulkMenu(!showBulkMenu)}
               disabled={isBulkGenerating || pairs.filter(p => !p.placeholder.content).length === 0}
-              className="bg-orange-600 hover:bg-orange-500 border border-transparent rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs text-white outline-none focus:border-panel-border whitespace-nowrap disabled:opacity-50 flex items-center gap-1.5"
+              className="bg-[var(--color-accent)] hover:opacity-90 border border-transparent rounded-lg px-3 py-2 text-xs text-text-main outline-none focus:border-panel-border whitespace-nowrap disabled:opacity-50 flex items-center gap-2"
             >
-              {isBulkGenerating ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-              Bulk Gen (CF)
+              {isBulkGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+              Bulk Generate
+              <ChevronDown size={14} className="opacity-70" />
             </button>
-            <button
-              onClick={() => handleBulkGenerate('puter')}
-              disabled={isBulkGenerating || pairs.filter(p => !p.placeholder.content).length === 0}
-              className="bg-[var(--color-accent)] hover:opacity-80 border border-transparent rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs text-text-main outline-none focus:border-panel-border whitespace-nowrap disabled:opacity-50 flex items-center gap-1.5"
-            >
-              {isBulkGenerating ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-              Bulk Gen (Puter)
-            </button>
-            <button
-              onClick={() => handleBulkGenerate('gemini')}
-              disabled={isBulkGenerating || pairs.filter(p => !p.placeholder.content).length === 0}
-              className="bg-blue-600 hover:bg-blue-500 border border-transparent rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs text-white outline-none focus:border-panel-border whitespace-nowrap disabled:opacity-50 flex items-center gap-1.5"
-            >
-              {isBulkGenerating ? <Loader2 size={12} className="animate-spin" /> : <Mic size={12} />}
-              Bulk Gen (Voice)
-            </button>
+            
+            {showBulkMenu && (
+              <div className="absolute top-full left-0 mt-2 w-48 bg-app-bg border border-panel-border rounded-xl shadow-2xl z-50 p-2 flex flex-col gap-1">
+                <button
+                  onClick={() => { setShowBulkMenu(false); handleBulkGenerate('cloudflare'); }}
+                  className="w-full text-left px-3 py-2 text-sm text-text-main hover:bg-orange-600/20 hover:text-orange-500 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <Sparkles size={14} /> With Cloudflare
+                </button>
+                <button
+                  onClick={() => { setShowBulkMenu(false); handleBulkGenerate('puter'); }}
+                  className="w-full text-left px-3 py-2 text-sm text-text-main hover:bg-[var(--color-accent)]/20 hover:text-[var(--color-accent)] rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <Sparkles size={14} /> With Puter
+                </button>
+                <button
+                  onClick={() => { setShowBulkMenu(false); handleBulkGenerate('gemini'); }}
+                  className="w-full text-left px-3 py-2 text-sm text-text-main hover:bg-blue-600/20 hover:text-blue-500 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <Mic size={14} /> With Gemini (Voice)
+                </button>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2 flex-1 sm:flex-initial">
             <span className="text-xs sm:text-sm text-text-muted font-medium whitespace-nowrap hidden sm:inline">Placement:</span>
@@ -443,7 +440,7 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
         </div>
       </div>
 
-      {/* Grid */}
+      {/* List */}
       <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
         {pairs.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-text-muted">
@@ -452,15 +449,63 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
             <p>Generate a script or add placeholders to the timeline to see them here.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-[1600px] mx-auto">
+          <div className="flex flex-col gap-4 max-w-4xl mx-auto">
             {pairs.map(({ placeholder, text }, index) => {
               const hasMedia = placeholder.content && placeholder.content !== '';
               const isVideo = placeholder.type === 'video';
               
+              const isExpanded = expandedItemId === placeholder.id;
+              
               return (
-                <div key={placeholder.id} className="bg-app-bg border border-panel-border rounded-2xl overflow-hidden shadow-xl flex flex-col">
-                  {/* Media Preview Area */}
-                  <div className="aspect-video relative bg-[#0a0a0a] group border-b border-panel-border">
+                <div key={placeholder.id} className="bg-app-bg border border-panel-border rounded-xl overflow-hidden shadow-lg flex flex-col transition-colors duration-200">
+                  {/* Compact Header */}
+                  <div 
+                    className="flex items-center p-3 gap-4 cursor-pointer hover:bg-button-bg"
+                    onClick={() => setExpandedItemId(isExpanded ? null : placeholder.id)}
+                  >
+                    <div className="w-24 sm:w-32 aspect-video bg-[#0a0a0a] rounded-lg relative overflow-hidden flex-shrink-0 border border-panel-border">
+                      {hasMedia ? (
+                        isVideo ? (
+                          <video src={placeholder.content} className="w-full h-full object-cover" />
+                        ) : (
+                          <img src={placeholder.content} alt="Preview" className="w-full h-full object-cover" />
+                        )
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center text-text-muted">
+                          <ImageIcon size={16} />
+                        </div>
+                      )}
+                      <div className="absolute bottom-1 right-1 px-1.5 py-0.5 bg-black/60  rounded text-[9px] font-semibold text-text-main">
+                        Scene {index + 1}
+                      </div>
+                    </div>
+                    
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <div className="text-[10px] text-text-muted uppercase font-semibold flex items-center gap-1.5 mb-1">
+                        <Wand2 size={10} /> Associated Text
+                      </div>
+                      <p className="text-sm text-text-main truncate">
+                        {text ? text.content : 'No text associated.'}
+                      </p>
+                    </div>
+                    
+                    <div className="flex-shrink-0 px-2 text-text-muted">
+                      <ChevronDown size={20} className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                    </div>
+                  </div>
+                  
+                  {/* Expanded Content */}
+                  <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div 
+                      initial={{ height: 0, opacity: 0 }} 
+                      animate={{ height: 'auto', opacity: 1 }} 
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-4 border-t border-panel-border bg-black/20 flex flex-col md:flex-row gap-6">
+                        {/* Media Edit Area */}
+                        <div className="md:w-1/2 aspect-video relative bg-[#0a0a0a] group rounded-xl overflow-hidden border border-panel-border flex-shrink-0">
                     {hasMedia ? (
                       <>
                         {isVideo ? (
@@ -468,57 +513,50 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
                         ) : (
                           <img src={placeholder.content} alt="Placeholder media" className="w-full h-full object-cover" />
                         )}
-                        <label className="absolute inset-0 z-10 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer backdrop-blur-sm">
+                        <label className="absolute inset-0 z-10 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer ">
                           <input 
                             type="file" 
                             accept="image/*,video/*" 
                             className="hidden" 
                             onChange={(e) => handleFileUpload(e, placeholder.id)}
                           />
-                          <div className="flex flex-col items-center gap-2 text-white">
+                          <div className="flex flex-col items-center gap-2 text-text-main">
                             <Upload size={24} />
                             <span className="text-sm font-semibold">Replace Media</span>
                           </div>
                         </label>
                       </>
                     ) : (
-                      <label className="absolute inset-0 z-10 flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 transition-colors group-hover:bg-white/5">
+                      <label className="absolute inset-0 z-10 flex flex-col items-center justify-center cursor-pointer hover:bg-button-bg transition-colors group-hover:bg-button-bg">
                         <input 
                           type="file" 
                           accept="image/*,video/*" 
                           className="hidden" 
                           onChange={(e) => handleFileUpload(e, placeholder.id)}
                         />
-                        <div className="w-12 h-12 rounded-full bg-button-bg flex items-center justify-center mb-3 text-text-muted group-hover:text-white transition-colors group-hover:bg-[var(--color-accent)]">
+                        <div className="w-12 h-12 rounded-full bg-button-bg flex items-center justify-center mb-3 text-text-muted group-hover:text-text-main transition-colors group-hover:bg-[var(--color-accent)]">
                           <Upload size={20} />
                         </div>
-                        <p className="text-sm font-semibold text-text-main group-hover:text-white">Click to add media</p>
+                        <p className="text-sm font-semibold text-text-main group-hover:text-text-main">Click to add media</p>
                         <p className="text-xs text-text-muted mt-1">Image or Video</p>
                       </label>
                     )}
                     
-                    <div className="absolute top-3 left-3 z-20 px-2.5 py-1 bg-black/60 backdrop-blur-md rounded-lg text-xs font-semibold text-white border border-white/10 shadow-lg">
+                    <div className="absolute top-3 left-3 z-20 px-2.5 py-1 bg-black/60  rounded-lg text-xs font-semibold text-text-main border border-panel-border shadow-lg">
                       Scene {index + 1}
                     </div>
                   </div>
 
                   {/* Content Area */}
-                  <div className="p-5 flex flex-col flex-1 gap-4">
-                    <div className="flex-1">
-                      <div className="text-[10px] text-text-muted uppercase font-semibold tracking-wider mb-2 flex items-center gap-1.5">
-                        <Wand2 size={12} />
-                        Associated Text
-                      </div>
-                      <p className="text-sm text-text-main leading-relaxed">
-                        {text ? text.content : 'No text associated.'}
-                      </p>
+                  <div className="flex flex-col flex-1 gap-3 justify-center">
+                    <div className="text-[10px] text-text-muted uppercase font-semibold tracking-wider mb-1">
+                      Generate Actions
                     </div>
-
                     <div className="flex flex-col gap-2">
                       <button
                         onClick={() => handleGeneratePuter(text ? text.content : '', placeholder.id)}
                         disabled={!text || generatingId === placeholder.id}
-                        className="w-full py-2.5 bg-[var(--color-accent)] hover:opacity-90 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full py-2.5 bg-[var(--color-accent)] hover:opacity-90 text-text-main rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         {generatingId === placeholder.id ? (
                           <>
@@ -535,7 +573,7 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
                       <button
                         onClick={() => handleGenerateCloudflare(text ? text.content : '', placeholder.id)}
                         disabled={!text || cfGeneratingId === placeholder.id}
-                        className="w-full py-2.5 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full py-2.5 bg-orange-600 hover:bg-orange-500 text-text-main rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         {cfGeneratingId === placeholder.id ? (
                           <>
@@ -552,7 +590,7 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
                       <button
                         onClick={() => handleGenerateGeminiVoice(text ? text.content : '', placeholder.id)}
                         disabled={!text || geminiGeneratingId === placeholder.id}
-                        className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-text-main rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         {geminiGeneratingId === placeholder.id ? (
                           <>
@@ -593,6 +631,10 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
                       </button>
                     </div>
                   </div>
+                  </div>
+                  </motion.div>
+                  )}
+                  </AnimatePresence>
                 </div>
               );
             })}

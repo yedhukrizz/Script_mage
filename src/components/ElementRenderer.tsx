@@ -177,11 +177,53 @@ export const ElementRenderer: React.FC<{ element: EditorElement }> = ({ element 
         const textEffectClass = element.textEffect && element.textEffect !== 'none' ? `effect-${element.textEffect}` : '';
         const fontFamily = element.fontFamily || 'Instrument Sans';
         
-        let renderedText = element.content;
-        if (element.animationIn === 'typewriter' && currentTime < element.startTime + animDuration && currentTime >= element.startTime) {
-          const progress = (currentTime - element.startTime) / animDuration;
-          const chars = Math.max(0, Math.floor(progress * element.content.length));
-          renderedText = element.content.substring(0, chars);
+        let renderedText: React.ReactNode = element.content;
+        
+        const isTypewriter = element.animationIn === 'typewriter' || element.textEffect === 'write-on';
+        const isWordEffect = ['fly-words', 'fade-words', 'zoom-words'].includes(element.textEffect || '');
+        
+        const textEffectDuration = Math.min(element.endTime - element.startTime, Math.max(1000, element.content.length * 50));
+        
+        if (!isEditingText) {
+          if (isTypewriter && currentTime < element.startTime + textEffectDuration && currentTime >= element.startTime) {
+            const progress = (currentTime - element.startTime) / textEffectDuration;
+            const chars = Math.max(0, Math.floor(progress * element.content.length));
+            renderedText = element.content.substring(0, chars);
+          } else if (isWordEffect) {
+            // Split into words, keeping spaces
+            const words = element.content.split(/(\s+)/);
+            const totalWords = words.filter(w => w.trim().length > 0).length;
+            let wordCount = 0;
+            
+            renderedText = words.map((word, index) => {
+              if (word.trim().length === 0) return <span key={index}>{word}</span>;
+              
+              const myIdx = wordCount++;
+              const wordStartTime = element.startTime + (myIdx / totalWords) * (textEffectDuration * 0.7);
+              const wordDuration = textEffectDuration * 0.3;
+              
+              let p = 1;
+              if (currentTime < wordStartTime) {
+                p = 0;
+              } else if (currentTime >= wordStartTime && currentTime < wordStartTime + wordDuration) {
+                p = easeFn((currentTime - wordStartTime) / wordDuration);
+              }
+              
+              let style: React.CSSProperties = { display: 'inline-block', whiteSpace: 'pre-wrap' };
+              
+              if (element.textEffect === 'fly-words') {
+                style.transform = `translateY(${(1 - p) * 50}px)`;
+                style.opacity = p;
+              } else if (element.textEffect === 'fade-words') {
+                style.opacity = p;
+              } else if (element.textEffect === 'zoom-words') {
+                style.transform = `scale(${0.2 + p * 0.8})`;
+                style.opacity = p;
+              }
+              
+              return <span key={index} style={style}>{word}</span>;
+            });
+          }
         }
         
         return isEditingText ? (

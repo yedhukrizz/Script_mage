@@ -13,16 +13,16 @@ export function AboutModal({ onClose }: AboutModalProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm p-4 sm:p-6"
+      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 sm:p-6"
     >
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="bg-app-bg text-text-main w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:rounded-[32px] flex flex-col pointer-events-auto shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] border border-white/5 relative overflow-hidden"
+        className="glass-panel-heavy text-text-main w-full max-h-[90vh] max-w-2xl rounded-[32px] sm:rounded-[40px] flex flex-col pointer-events-auto relative overflow-hidden"
       >
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-panel-border shrink-0 bg-app-bg z-10">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-panel-border shrink-0 z-10 glass-panel border-x-0 border-t-0 rounded-none">
           <div className="font-semibold text-lg tracking-tight shrink-0 flex items-center gap-3 text-text-main">
             <div className="w-8 h-8 rounded-full bg-panel-bg flex items-center justify-center overflow-hidden border border-panel-border shadow-sm">
               <img src="/favicon.ico" alt="Script Mage Icon" className="w-full h-full object-cover" />

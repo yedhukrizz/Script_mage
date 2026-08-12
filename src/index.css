@@ -33,6 +33,19 @@
 @import "tailwindcss";
 
 @layer utilities {
+@layer utilities {
+  .glass-panel {
+    background-color: var(--color-panel-bg);
+    border: 1px solid var(--color-panel-border);
+    box-shadow: 0 4px 6px -1px var(--color-shadow), 0 2px 4px -2px var(--color-shadow);
+  }
+  .glass-panel-heavy {
+    background-color: var(--color-panel-bg);
+    border: 1px solid var(--color-panel-border);
+    box-shadow: 0 10px 15px -3px var(--color-shadow), 0 4px 6px -4px var(--color-shadow);
+  }
+}
+
   * {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
@@ -43,14 +56,17 @@
 }
 
 @theme {
-  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
-  --color-app-bg: var(--theme-app-bg, #0a0a0a);
-  --color-panel-bg: var(--theme-panel-bg, #121212);
-  --color-panel-border: var(--theme-panel-border, rgba(39, 39, 42, 0.5));
-  --color-text-main: var(--theme-text-main, #ffffff);
-  --color-text-muted: var(--theme-text-muted, #a1a1aa);
-  --color-button-bg: var(--theme-button-bg, #18181b);
-  --color-button-hover: var(--theme-button-hover, #27272a);
+  --font-sans: "Inter", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --color-app-bg: #09090b;
+  --color-shadow: rgba(0, 0, 0, 0.25);
+  --color-glass-rim: transparent;
+  --color-panel-bg: #18181b;
+  --color-panel-border: #27272a;
+  --color-text-main: #fafafa;
+  --color-text-muted: #a1a1aa;
+  --color-button-bg: #27272a;
+  --color-input-bg: #18181b;
+  --color-button-hover: #3f3f46;
 }
 
 @property --color-accent {
@@ -59,34 +75,32 @@
   inherits: true;
 }
 
-:root {
-  --theme-app-bg: #09090b;
-  --theme-panel-bg: rgba(24, 24, 27, 0.6);
-  --theme-panel-border: rgba(255, 255, 255, 0.08);
-  --theme-text-main: #ffffff;
-  --theme-text-muted: #a1a1aa;
-  --theme-button-bg: rgba(255, 255, 255, 0.04);
-  --theme-button-hover: rgba(255, 255, 255, 0.08);
-}
+
 
 .theme-light {
-  --theme-app-bg: #fafafa;
-  --theme-panel-bg: rgba(255, 255, 255, 0.8);
-  --theme-panel-border: rgba(0, 0, 0, 0.06);
-  --theme-text-main: #09090b;
-  --theme-text-muted: #52525b;
-  --theme-button-bg: rgba(0, 0, 0, 0.03);
-  --theme-button-hover: rgba(0, 0, 0, 0.06);
+  --color-app-bg: #fbfbfc;
+  --color-shadow: rgba(0, 0, 0, 0.03);
+  --color-glass-rim: transparent;
+  --color-panel-bg: #ffffff;
+  --color-panel-border: #f4f4f5;
+  --color-text-main: #18181b;
+  --color-text-muted: #a1a1aa;
+  --color-button-bg: #f4f4f5;
+  --color-input-bg: #f4f4f5;
+  --color-button-hover: #e4e4e7;
 }
 
 .theme-black {
-  --theme-app-bg: #000000;
-  --theme-panel-bg: rgba(25, 25, 25, 0.5);
-  --theme-panel-border: rgba(255, 255, 255, 0.08);
-  --theme-text-main: #ffffff;
-  --theme-text-muted: #a1a1aa;
-  --theme-button-bg: rgba(255, 255, 255, 0.05);
-  --theme-button-hover: rgba(255, 255, 255, 0.1);
+  --color-app-bg: #000000;
+  --color-shadow: rgba(0, 0, 0, 0.5);
+  --color-glass-rim: transparent;
+  --color-panel-bg: #0a0a0a;
+  --color-panel-border: #262626;
+  --color-text-main: #ffffff;
+  --color-text-muted: #737373;
+  --color-button-bg: #171717;
+  --color-input-bg: #0a0a0a;
+  --color-button-hover: #262626;
 }
 
 @keyframes rainbow-accent {
@@ -211,4 +225,44 @@
 
 .effect-neon {
   text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px currentColor, 0 0 40px currentColor, 0 0 80px currentColor;
+}
+.effect-glitch {
+  animation: glitch-anim 2s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+  0% {
+    clip-path: polygon(0 2%, 100% 2%, 100% 5%, 0 5%);
+    transform: translate(0);
+  }
+  20% {
+    clip-path: polygon(0 15%, 100% 15%, 100% 15%, 0 15%);
+    transform: translate(-5px);
+  }
+  40% {
+    clip-path: polygon(0 10%, 100% 10%, 100% 20%, 0 20%);
+    transform: translate(5px);
+  }
+  60% {
+    clip-path: polygon(0 40%, 100% 40%, 100% 43%, 0 43%);
+    transform: translate(0);
+  }
+  80% {
+    clip-path: polygon(0 30%, 100% 30%, 100% 30%, 0 30%);
+    transform: translate(5px);
+  }
+  100% {
+    clip-path: polygon(0 50%, 100% 50%, 100% 55%, 0 55%);
+    transform: translate(-5px);
+  }
+}
+
+
+::placeholder {
+  color: var(--color-text-muted) !important;
+  opacity: 0.7 !important;
+}
+::-webkit-input-placeholder {
+  color: var(--color-text-muted) !important;
+  opacity: 0.7 !important;
 }

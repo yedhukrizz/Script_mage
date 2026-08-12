@@ -478,8 +478,12 @@ export function ExportButton({ className = "flex items-center justify-center w-1
             ctx.fillRect(0, 0, element.width, element.height);
           } else if (element.type === 'text') {
             let renderedText = element.content;
-            if (element.animationIn === 'typewriter' && timeSinceStart < animDuration) {
-              const progress = timeSinceStart / animDuration;
+            const isTypewriter = element.animationIn === 'typewriter' || element.textEffect === 'write-on';
+            const isWordEffect = ['fly-words', 'fade-words', 'zoom-words'].includes(element.textEffect || '');
+            const textEffectDuration = Math.min(element.endTime - element.startTime, Math.max(1000, element.content.length * 50));
+
+            if (isTypewriter && timeSinceStart < textEffectDuration) {
+              const progress = timeSinceStart / textEffectDuration;
               const chars = Math.max(0, Math.floor(progress * element.content.length));
               renderedText = element.content.substring(0, chars);
             }
@@ -495,6 +499,10 @@ export function ExportButton({ className = "flex items-center justify-center w-1
               dy = (Math.random() - 0.5) * 6;
             } else if (element.textEffect === 'flicker') {
               if (Math.random() > 0.8) renderOpacity = renderOpacity * 0.3;
+            } else if (element.textEffect === 'glitch') {
+              if (Math.random() > 0.8) {
+                 dx = (Math.random() - 0.5) * 15;
+              }
             }
 
             ctx.globalAlpha = renderOpacity;
@@ -503,7 +511,6 @@ export function ExportButton({ className = "flex items-center justify-center w-1
             const fontFamily = element.fontFamily || 'Instrument Sans';
             ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", ui-sans-serif, system-ui, sans-serif`;
             ctx.fillStyle = element.color || '#ffffff';
-            ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             
             if (element.textEffect === 'bloom') {
@@ -542,11 +549,69 @@ export function ExportButton({ className = "flex items-center justify-center w-1
             const totalHeight = lines.length * lineHeight;
             let startY = (element.height - totalHeight) / 2 + lineHeight / 2;
             
+            const totalWords = element.content.split(/\s+/).filter(w => w.trim().length > 0).length;
+            let wordCount = 0;
+            const spaceWidth = ctx.measureText(' ').width;
+            
             lines.forEach(line => {
-              ctx.fillText(line, element.width / 2 + dx, startY + dy);
-              if (element.textEffect === 'bloom' || element.textEffect === 'neon') {
-                 // double draw for extra glow
-                 ctx.fillText(line, element.width / 2 + dx, startY + dy);
+              if (!isWordEffect) {
+                ctx.textAlign = 'center';
+                ctx.fillText(line, element.width / 2 + dx, startY + dy);
+                if (element.textEffect === 'bloom' || element.textEffect === 'neon') {
+                   ctx.fillText(line, element.width / 2 + dx, startY + dy);
+                }
+              } else {
+                const words = line.split(' ');
+                const lineWidth = ctx.measureText(line).width;
+                let currentX = element.width / 2 - lineWidth / 2;
+                
+                words.forEach((word) => {
+                  if (word.trim().length === 0) {
+                    currentX += spaceWidth;
+                    return;
+                  }
+                  
+                  const w = ctx.measureText(word).width;
+                  const myIdx = wordCount++;
+                  const wordStartTime = (myIdx / totalWords) * (textEffectDuration * 0.7);
+                  const wordDuration = textEffectDuration * 0.3;
+                  
+                  let p = 1;
+                  if (timeSinceStart < wordStartTime) {
+                    p = 0;
+                  } else if (timeSinceStart >= wordStartTime && timeSinceStart < wordStartTime + wordDuration) {
+                    const t = (timeSinceStart - wordStartTime) / wordDuration;
+                    p = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; // easeInOutQuad
+                  }
+                  
+                  ctx.save();
+                  let wordRenderOp = renderOpacity;
+                  let wordDx = dx;
+                  let wordDy = dy;
+                  let scale = 1;
+                  
+                  if (element.textEffect === 'fly-words') {
+                    wordDy += (1 - p) * 50;
+                    wordRenderOp *= p;
+                  } else if (element.textEffect === 'zoom-words') {
+                    scale = 0.2 + p * 0.8;
+                    wordRenderOp *= p;
+                  } else if (element.textEffect === 'fade-words') {
+                    wordRenderOp *= p;
+                  }
+                  
+                  ctx.globalAlpha = wordRenderOp;
+                  ctx.translate(currentX + w / 2 + wordDx, startY + wordDy);
+                  ctx.scale(scale, scale);
+                  ctx.textAlign = 'center';
+                  ctx.fillText(word, 0, 0);
+                  if (element.textEffect === 'bloom' || element.textEffect === 'neon') {
+                     ctx.fillText(word, 0, 0);
+                  }
+                  ctx.restore();
+                  
+                  currentX += w + spaceWidth;
+                });
               }
               startY += lineHeight;
             });
@@ -638,14 +703,14 @@ export function ExportButton({ className = "flex items-center justify-center w-1
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-sm p-4"
+            className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]  p-4"
           >
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="bg-panel-bg/95 backdrop-blur-2xl border border-white/10 text-text-main w-full max-w-sm rounded-[32px] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] flex flex-col p-8 items-center text-center pointer-events-auto"
+              className="glass-panel-heavy text-text-main w-full max-w-sm rounded-[32px] flex flex-col p-8 items-center text-center pointer-events-auto"
             >
               <div className="w-16 h-16 rounded-2xl bg-[var(--color-accent)]/20 border border-[var(--color-accent)]/30 flex items-center justify-center text-[var(--color-accent)] shadow-inner mb-6">
                 <Film size={32} className="animate-pulse" />
@@ -653,7 +718,7 @@ export function ExportButton({ className = "flex items-center justify-center w-1
               <h3 className="text-xl font-bold mb-2">Exporting Video</h3>
               <p className="text-sm text-text-muted mb-6">Please wait while your video is being rendered. This might take a minute.</p>
               
-              <div className="w-full bg-black/40 rounded-full h-3 mb-2 overflow-hidden border border-white/5">
+              <div className="w-full bg-[var(--theme-input-bg)] rounded-full h-3 mb-2 overflow-hidden border border-panel-border">
                 <div 
                   className="bg-[var(--color-accent)] h-full transition-all duration-300 ease-out rounded-full"
                   style={{ width: `${Math.round(progress * 100)}%` }}

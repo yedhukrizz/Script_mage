@@ -1,13 +1,42 @@
 import React, { useState } from 'react';
 import { useStore } from '../store/useStore';
-import { Type, Image as ImageIcon, Square, Circle, Plus, Terminal, Sparkles, Settings, LayoutTemplate, Mic, Globe, ImagePlus } from 'lucide-react';
+import { 
+  Type, Image as ImageIcon, Square, Circle, Plus, Terminal, Sparkles, 
+  Settings, LayoutTemplate, Mic, Globe, ImagePlus, Palette, FastForward, 
+  ChevronLeft, Music, X
+} from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
-import { BackgroundQuickSelect } from './BackgroundQuickSelect';
-import { FontQuickSelect } from './FontQuickSelect';
-import { TimeScaleQuickSelect } from './TimeScaleQuickSelect';
-import { SettingsQuickSelect } from './SettingsQuickSelect';
 import { ExportButton } from './ExportButton';
-import { Music } from 'lucide-react';
+
+const STANDARD_FONTS = [
+  'Instrument Sans', 'Playfair Display', 'Inter', 'Montserrat', 'Poppins', 
+  'Roboto', 'Oswald', 'Cinzel', 'Pacifico', 'Space Grotesk', 'Bebas Neue', 'Caveat', 'Dancing Script'
+];
+
+const BACKGROUND_OPTIONS = [
+  { label: 'Solid Color', value: 'solid' },
+  { label: 'Gradient', value: 'gradient' },
+  { label: 'Animated Gradient', value: 'animated-gradient' },
+  { label: 'Canvas Video', value: 'video' },
+  { label: 'Scrolling Grid', value: 'scrolling-grid' },
+  { label: 'Scrolling Dots', value: 'scrolling-dots' },
+  { label: 'Scrolling Lines', value: 'scrolling-lines' },
+  { label: 'Scanning Laser', value: 'scanning-laser' },
+  { label: 'Scrolling Diagonal', value: 'scrolling-diagonal' },
+  { label: 'Pulse Grid', value: 'pulse-grid' },
+  { label: 'Radar Sweep', value: 'radar-sweep' }
+];
+
+const SPEED_PRESETS = [
+  { label: '0.5x (Slow Down 2x)', value: 0.5 },
+  { label: '0.75x (Slow Down 1.33x)', value: 0.75 },
+  { label: '1.0x (Normal Speed)', value: 1.0 },
+  { label: '1.25x (Speed Up 1.25x)', value: 1.25 },
+  { label: '1.5x (Speed Up 1.5x)', value: 1.5 },
+  { label: '2.0x (Speed Up 2x)', value: 2.0 }
+];
+
+const EMPTY_CUSTOM_FONTS: string[] = [];
 
 export function Toolbar() {
   const addElement = useStore((state) => state.addElement);
@@ -20,13 +49,39 @@ export function Toolbar() {
   const setShowGlobalTranslateModal = useStore((state) => state.setShowGlobalTranslateModal);
   const setShowPlaceholderGallery = useStore((state) => state.setShowPlaceholderGallery);
   const setShowSettings = useStore((state) => state.setShowSettings);
+  const addToast = useStore((state) => state.addToast);
+
+  // Zustand Store Actions & Settings
+  const gridOverlay = useStore((state) => state.gridOverlay);
+  const setGridOverlay = useStore((state) => state.setGridOverlay);
+  const keylightType = useStore((state) => state.keylightType);
+  const setKeylightType = useStore((state) => state.setKeylightType);
+  const globalTextScale = useStore((state) => state.globalTextScale);
+  const setGlobalTextScale = useStore((state) => state.setGlobalTextScale);
+  const backgroundAudioUrl = useStore((state) => state.backgroundAudioUrl);
+  const backgroundAudioVolume = useStore((state) => state.backgroundAudioVolume);
+  const setBackgroundAudioVolume = useStore((state) => state.setBackgroundAudioVolume);
+  const applyDefaultsToProject = useStore((state) => state.applyDefaultsToProject);
+  const applyGlobalFont = useStore((state) => state.applyGlobalFont);
+  const backgroundType = useStore((state) => state.backgroundType);
+  const setBackgroundType = useStore((state) => state.setBackgroundType);
+  const scaleTimeline = useStore((state) => state.scaleTimeline);
+  const storeCustomFonts = useStore((state) => state.customFonts);
+  const customFonts = storeCustomFonts || EMPTY_CUSTOM_FONTS;
+
   const [isOpen, setIsOpen] = useState(false);
+  const [activeSubMenu, setActiveSubMenu] = useState<'main' | 'settings' | 'font' | 'background' | 'speed'>('main');
+  const [fontSearch, setFontSearch] = useState('');
+
+  const toggleOpen = () => {
+    setIsOpen(!isOpen);
+    setActiveSubMenu('main');
+  };
 
   const getCenteredProps = (elementAspectRatio: number = 1) => {
     const cw = canvasAspectRatio === '16/9' ? 1920 : canvasAspectRatio === '9/16' ? 1080 : 1080;
     const ch = canvasAspectRatio === '16/9' ? 1080 : canvasAspectRatio === '9/16' ? 1920 : canvasAspectRatio === '4/5' ? 1350 : 1080;
     
-    // 30% of canvas width or height depending on aspect ratio
     const size = Math.min(cw, ch) * 0.3;
     let width = size;
     let height = size;
@@ -54,7 +109,7 @@ export function Toolbar() {
     if (cw > ch && width > 1200) {
       width = 1200;
     }
-    const height = 400; // Enough for 2-3 lines at size 120
+    const height = 400;
     const x = (cw - width) / 2;
     const y = (ch - height) / 2;
 
@@ -128,7 +183,7 @@ export function Toolbar() {
         id: uuidv4(),
         type: 'audio',
         content: url,
-        x: 100, y: 100, width: 300, height: 100, // Small box just to be selectable
+        x: 100, y: 100, width: 300, height: 100,
         rotation: 0, opacity: 1, volume: 1,
         startTime: 0, endTime: Math.max(0, duration),
         animationIn: 'none', animationOut: 'none', easing: 'linear',
@@ -153,7 +208,7 @@ export function Toolbar() {
       width: cw,
       height: ch,
       rotation: 0,
-      opacity: 1, // Global dimness is via mediaDimness
+      opacity: 1,
       mediaDimness: placeholderDefaults.mediaDimness,
       startTime: 0,
       endTime: Math.max(0, duration),
@@ -167,117 +222,394 @@ export function Toolbar() {
     setIsOpen(false);
   };
 
+  const allFonts = Array.from(new Set([...customFonts, ...STANDARD_FONTS]));
+  const filteredFonts = fontSearch ? allFonts.filter(f => f.toLowerCase().includes(fontSearch.toLowerCase())) : allFonts;
+
   return (
-    <div className="absolute right-6 bottom-6 flex flex-col-reverse items-center gap-3 z-50">
-      <button 
-        onClick={() => setIsOpen(!isOpen)} 
-        className={`w-14 h-14 bg-text-main text-app-bg rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all ${isOpen ? 'rotate-45' : 'rotate-0'}`}
-      >
-        <Plus size={24} />
-      </button>
-
+    <>
       {isOpen && (
-        <div className="bg-button-bg border border-panel-border p-2 rounded-2xl shadow-2xl mb-2 animate-in fade-in slide-in-from-bottom-4 zoom-in-95 duration-200">
-          <div className="flex flex-col gap-1 w-full relative group/tools mb-1 px-1">
-             <select 
-               value={canvasAspectRatio} 
-               onChange={(e) => setCanvasAspectRatio(e.target.value)}
-               className="appearance-none bg-button-bg border border-panel-border rounded-xl w-full text-center h-10 text-xs font-medium text-text-main outline-none focus:border-panel-border flex-shrink-0 cursor-pointer hover:bg-button-hover transition-colors"
-             >
-               <option value="9/16">9:16 Portrait</option>
-               <option value="16/9">16:9 Landscape</option>
-               <option value="1/1">1:1 Square</option>
-               <option value="4/5">4:5 Vertical</option>
-             </select>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-1 w-full relative group/tools">
-            <SettingsQuickSelect />
-            <ExportButton className="w-10 h-10 sm:w-12 sm:h-12 bg-button-bg text-text-main rounded-xl flex justify-center items-center hover:bg-button-hover hover:text-text-main transition-colors text-xs font-semibold" iconSize={20} />
+        <div 
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={() => setIsOpen(false)}
+        >
+          <div 
+            className="bg-panel-bg/95 backdrop-blur-xl border border-panel-border p-3 rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[85vh] overflow-y-auto custom-scrollbar w-[320px] sm:w-[360px] select-none"
+            onClick={(e) => e.stopPropagation()}
+          >
             
-            <TimeScaleQuickSelect />
-            <button 
-              onClick={() => {
-                setShowScriptModal(true, 'generate');
-                setIsOpen(false);
-              }} 
-              className="w-10 h-10 sm:w-12 sm:h-12 bg-button-bg text-text-main rounded-xl flex justify-center items-center hover:bg-button-hover hover:text-text-main transition-colors text-xs font-semibold" 
-              title="AI Script Generator"
-            >
-              <Sparkles size={20} />
-            </button>
-            <button 
-              onClick={() => {
-                setShowPlaceholderGallery(true);
-                setIsOpen(false);
-              }} 
-              className="w-10 h-10 sm:w-12 sm:h-12 bg-button-bg text-text-main rounded-xl flex justify-center items-center hover:bg-button-hover hover:text-text-main transition-colors text-xs font-semibold" 
-              title="Placeholder Gallery (Prompt Copier)"
-            >
-              <ImagePlus size={20} />
-            </button>
-            <button 
-              onClick={() => {
-                setShowGlobalTTSModal(true);
-                setIsOpen(false);
-              }} 
-              className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--color-accent)] text-white rounded-xl flex justify-center items-center hover:opacity-90 transition-opacity" 
-              title="Global Text-to-Speech"
-            >
-               <Mic size={20} />
-            </button>
-            <button 
-              onClick={() => {
-                setShowGlobalTranslateModal(true);
-                setIsOpen(false);
-              }} 
-              className="w-10 h-10 sm:w-12 sm:h-12 bg-button-bg text-text-main rounded-xl flex justify-center items-center hover:bg-button-hover hover:text-text-main transition-colors" 
-              title="Global Translation"
-            >
-               <Globe size={20} />
-            </button>
-            <button 
-              onClick={() => {
-                setShowScriptModal(true, 'paste');
-                setIsOpen(false);
-              }} 
-              className="w-10 h-10 sm:w-12 sm:h-12 bg-button-bg text-text-main rounded-xl flex justify-center items-center hover:bg-button-hover hover:text-text-main transition-colors text-xs font-semibold" 
-              title="Paste Script"
-            >
-               <Terminal size={20} />
-            </button>
-            <FontQuickSelect />
-            <BackgroundQuickSelect />
+            {/* Active Submenu Header */}
+          {activeSubMenu !== 'main' && (
+            <div className="sticky top-0 bg-panel-bg/95 backdrop-blur-md z-20 flex items-center justify-between border-b border-panel-border pb-2.5 mb-2.5 pt-0.5">
+              <button 
+                onClick={() => setActiveSubMenu('main')}
+                className="flex items-center gap-1 text-xs font-semibold text-[var(--color-accent)] hover:underline"
+              >
+                <ChevronLeft size={16} />
+                <span>Back to Menu</span>
+              </button>
+              <span className="text-xs font-bold text-text-main capitalize">
+                {activeSubMenu === 'font' && 'Global Font'}
+                {activeSubMenu === 'background' && 'Canvas Background'}
+                {activeSubMenu === 'speed' && 'Timeline Speed'}
+                {activeSubMenu === 'settings' && 'Quick Settings'}
+              </span>
+            </div>
+          )}
 
-            <button onClick={() => handleAddShape('circle')} className="w-10 h-10 sm:w-12 sm:h-12 bg-button-bg text-text-main rounded-xl flex justify-center items-center hover:bg-button-hover hover:text-text-main transition-colors" title="Circle">
-              <Circle size={20} />
-            </button>
-            
-            <button onClick={() => handleAddShape('rectangle')} className="w-10 h-10 sm:w-12 sm:h-12 bg-button-bg text-text-main rounded-xl flex justify-center items-center hover:bg-button-hover hover:text-text-main transition-colors" title="Rectangle">
-              <Square size={20} />
-            </button>
+          {/* MAIN MENU VIEW */}
+          {activeSubMenu === 'main' && (
+            <div className="flex flex-col gap-2.5">
+              {/* Aspect Ratio Selector - Sticky Header */}
+              <div className="sticky top-0 bg-panel-bg z-20 pt-0.5 pb-1 -mt-0.5">
+                <div className="flex items-center gap-2 bg-button-bg/80 backdrop-blur-sm p-1.5 rounded-xl border border-panel-border shadow-sm">
+                  <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wider pl-1.5 shrink-0">Ratio:</span>
+                  <select 
+                    value={canvasAspectRatio} 
+                    onChange={(e) => setCanvasAspectRatio(e.target.value)}
+                    className="appearance-none bg-button-bg border border-panel-border rounded-lg w-full text-center h-7 text-xs font-semibold text-text-main outline-none focus:border-[var(--color-accent)] cursor-pointer hover:bg-button-hover transition-colors px-2"
+                  >
+                    <option value="9/16">9:16 Portrait (Reels/Shorts)</option>
+                    <option value="16/9">16:9 Landscape (YouTube)</option>
+                    <option value="1/1">1:1 Square (Feed)</option>
+                    <option value="4/5">4:5 Vertical (Instagram)</option>
+                  </select>
+                </div>
+              </div>
 
-            <label className="w-10 h-10 sm:w-12 sm:h-12 bg-button-bg text-text-main rounded-xl flex justify-center items-center hover:bg-button-hover hover:text-text-main transition-colors cursor-pointer" title="Image">
-              <ImageIcon size={20} />
-              <input type="file" accept="image/*" className="hidden" onChange={handleAddImage} />
-            </label>
-            
-            <label className="w-10 h-10 sm:w-12 sm:h-12 bg-button-bg text-text-main rounded-xl flex justify-center items-center hover:bg-button-hover hover:text-text-main transition-colors cursor-pointer" title="Add Background Music">
-              <Music size={20} />
-              <input type="file" accept="audio/*" className="hidden" onChange={handleAddMusic} />
-            </label>
-            
-            <button onClick={handleAddText} className="w-10 h-10 sm:w-12 sm:h-12 bg-button-bg text-text-main rounded-xl flex justify-center items-center hover:bg-button-hover hover:text-text-main transition-colors" title="Text">
-              <Type size={20} />
-            </button>
-            
-            <button onClick={handleAddPlaceholder} className="w-10 h-10 sm:w-12 sm:h-12 bg-button-bg text-text-main rounded-xl flex justify-center items-center hover:bg-button-hover hover:text-text-main transition-colors" title="Background Placeholder">
-              <LayoutTemplate size={20} />
-            </button>
+              {/* Labeled Tool Grid */}
+              <div className="grid grid-cols-4 gap-1.5">
+                {/* AI & Content Generators */}
+                <button 
+                  onClick={() => { setShowScriptModal(true, 'generate'); setIsOpen(false); }}
+                  className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-panel-border/50 hover:border-[var(--color-accent)] transition-all gap-1 group"
+                  title="AI Script Generator"
+                >
+                  <Sparkles size={18} className="text-[var(--color-accent)] group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-medium leading-tight text-center truncate w-full">AI Script</span>
+                </button>
+
+                <button 
+                  onClick={() => { setShowScriptModal(true, 'paste'); setIsOpen(false); }}
+                  className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-panel-border/50 hover:border-[var(--color-accent)] transition-all gap-1 group"
+                  title="Paste Script Code"
+                >
+                  <Terminal size={18} className="text-emerald-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Paste Script</span>
+                </button>
+
+                <button 
+                  onClick={() => { setShowGlobalTTSModal(true); setIsOpen(false); }}
+                  className="flex flex-col items-center justify-center p-2 bg-[var(--color-accent)]/15 hover:bg-[var(--color-accent)]/25 text-[var(--color-accent)] rounded-xl border border-[var(--color-accent)]/30 transition-all gap-1 group"
+                  title="Global Text-to-Speech"
+                >
+                  <Mic size={18} className="group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-semibold leading-tight text-center truncate w-full">TTS Voice</span>
+                </button>
+
+                <button 
+                  onClick={() => { setShowGlobalTranslateModal(true); setIsOpen(false); }}
+                  className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-panel-border/50 hover:border-[var(--color-accent)] transition-all gap-1 group"
+                  title="Global Translation"
+                >
+                  <Globe size={18} className="text-sky-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Translate</span>
+                </button>
+
+                <button 
+                  onClick={() => { setShowPlaceholderGallery(true); setIsOpen(false); }}
+                  className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-panel-border/50 hover:border-[var(--color-accent)] transition-all gap-1 group"
+                  title="Placeholder Prompts Gallery"
+                >
+                  <ImagePlus size={18} className="text-amber-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Prompts</span>
+                </button>
+
+                {/* Adding Canvas Elements */}
+                <button 
+                  onClick={handleAddText}
+                  className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-panel-border/50 hover:border-[var(--color-accent)] transition-all gap-1 group"
+                  title="Add Text Block"
+                >
+                  <Type size={18} className="group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Text</span>
+                </button>
+
+                <label 
+                  className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-panel-border/50 hover:border-[var(--color-accent)] transition-all gap-1 cursor-pointer group"
+                  title="Upload Image"
+                >
+                  <ImageIcon size={18} className="group-hover:scale-110 transition-transform text-indigo-400" />
+                  <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Image</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onClick={(e) => { (e.target as HTMLInputElement).value = ''; }}
+                    onChange={handleAddImage} 
+                  />
+                </label>
+
+                <label 
+                  className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-panel-border/50 hover:border-[var(--color-accent)] transition-all gap-1 cursor-pointer group"
+                  title="Upload Background Music / Audio"
+                >
+                  <Music size={18} className="group-hover:scale-110 transition-transform text-pink-400" />
+                  <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Music</span>
+                  <input 
+                    type="file" 
+                    accept="audio/*" 
+                    className="hidden" 
+                    onClick={(e) => { (e.target as HTMLInputElement).value = ''; }}
+                    onChange={handleAddMusic} 
+                  />
+                </label>
+
+                <button 
+                  onClick={() => handleAddShape('rectangle')}
+                  className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-panel-border/50 hover:border-[var(--color-accent)] transition-all gap-1 group"
+                  title="Add Rectangle"
+                >
+                  <Square size={18} className="group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Rectangle</span>
+                </button>
+
+                <button 
+                  onClick={() => handleAddShape('circle')}
+                  className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-panel-border/50 hover:border-[var(--color-accent)] transition-all gap-1 group"
+                  title="Add Circle"
+                >
+                  <Circle size={18} className="group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Circle</span>
+                </button>
+
+                <button 
+                  onClick={handleAddPlaceholder}
+                  className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-panel-border/50 hover:border-[var(--color-accent)] transition-all gap-1 group"
+                  title="Add Background Placeholder"
+                >
+                  <LayoutTemplate size={18} className="group-hover:scale-110 transition-transform text-purple-400" />
+                  <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Placeholder</span>
+                </button>
+
+                {/* Customization Submenus */}
+                <button 
+                  onClick={() => setActiveSubMenu('font')}
+                  className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-panel-border/50 hover:border-[var(--color-accent)] transition-all gap-1 group"
+                  title="Choose Global Font"
+                >
+                  <span className="font-serif text-base font-bold leading-none group-hover:scale-110 transition-transform">Ag</span>
+                  <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Font</span>
+                </button>
+
+                <button 
+                  onClick={() => setActiveSubMenu('background')}
+                  className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-panel-border/50 hover:border-[var(--color-accent)] transition-all gap-1 group"
+                  title="Change Background Type"
+                >
+                  <Palette size={18} className="group-hover:scale-110 transition-transform text-teal-400" />
+                  <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Background</span>
+                </button>
+
+                <button 
+                  onClick={() => setActiveSubMenu('speed')}
+                  className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-panel-border/50 hover:border-[var(--color-accent)] transition-all gap-1 group"
+                  title="Scale Timeline Speed"
+                >
+                  <FastForward size={18} className="group-hover:scale-110 transition-transform text-orange-400" />
+                  <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Speed</span>
+                </button>
+
+                <button 
+                  onClick={() => setActiveSubMenu('settings')}
+                  className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-panel-border/50 hover:border-[var(--color-accent)] transition-all gap-1 group"
+                  title="Quick Settings"
+                >
+                  <Settings size={18} className="group-hover:scale-110 transition-transform text-slate-400" />
+                  <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Settings</span>
+                </button>
+
+                {/* Export Action */}
+                <ExportButton className="col-span-4 flex items-center justify-center gap-2 bg-[var(--color-accent)] hover:opacity-90 text-white rounded-xl py-2.5 px-3 text-xs font-semibold shadow-md transition-all mt-1" iconSize={16} />
+              </div>
+            </div>
+          )}
+
+          {/* FONT SUBMENU VIEW */}
+          {activeSubMenu === 'font' && (
+            <div className="flex flex-col gap-2.5">
+              <input 
+                type="text" 
+                placeholder="Search fonts..." 
+                value={fontSearch}
+                onChange={(e) => setFontSearch(e.target.value)}
+                className="w-full bg-button-bg border border-panel-border rounded-xl px-3 py-1.5 text-xs text-text-main placeholder:text-text-muted outline-none focus:border-[var(--color-accent)]"
+              />
+              <div className="flex flex-col gap-1 max-h-[220px] overflow-y-auto custom-scrollbar pr-0.5">
+                {filteredFonts.map((font) => (
+                  <button
+                    key={font}
+                    onClick={() => {
+                      applyGlobalFont(font);
+                      addToast(`Applied font "${font}" to project text`, 'success');
+                      setActiveSubMenu('main');
+                    }}
+                    className={`flex items-center justify-between px-3 py-2 text-xs rounded-xl transition-colors font-medium text-left ${
+                      defaults.text.fontFamily === font 
+                        ? 'bg-[var(--color-accent)] text-white font-bold' 
+                        : 'text-text-main hover:bg-button-hover bg-button-bg/40'
+                    }`}
+                  >
+                    <span style={{ fontFamily: `"${font}", sans-serif` }}>{font}</span>
+                    <span className="text-[10px] opacity-70">Sample</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* BACKGROUND SUBMENU VIEW */}
+          {activeSubMenu === 'background' && (
+            <div className="flex flex-col gap-1 max-h-[260px] overflow-y-auto custom-scrollbar pr-0.5">
+              {BACKGROUND_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => {
+                    setBackgroundType(opt.value as any);
+                    addToast(`Background changed to ${opt.label}`, 'success');
+                    setActiveSubMenu('main');
+                  }}
+                  className={`flex items-center justify-between px-3 py-2 text-xs rounded-xl transition-colors font-medium text-left ${
+                    backgroundType === opt.value 
+                      ? 'bg-[var(--color-accent)] text-white font-bold' 
+                      : 'text-text-main hover:bg-button-hover bg-button-bg/40'
+                  }`}
+                >
+                  <span>{opt.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* SPEED / TIME SCALE SUBMENU VIEW */}
+          {activeSubMenu === 'speed' && (
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[10px] text-text-muted">Scale all element timings and video duration together:</span>
+              <div className="flex flex-col gap-1">
+                {SPEED_PRESETS.map((preset) => (
+                  <button
+                    key={preset.label}
+                    onClick={() => {
+                      scaleTimeline(preset.value);
+                      addToast(`Scaled timeline speed by ${preset.value}x`, 'success');
+                      setActiveSubMenu('main');
+                    }}
+                    className="flex items-center justify-between px-3 py-2 text-xs rounded-xl transition-colors font-medium text-left bg-button-bg/40 hover:bg-button-hover text-text-main"
+                  >
+                    <span>{preset.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* QUICK SETTINGS SUBMENU VIEW */}
+          {activeSubMenu === 'settings' && (
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] text-text-muted uppercase font-semibold">Grid Overlay</label>
+                <select 
+                  value={gridOverlay} 
+                  onChange={(e) => setGridOverlay(e.target.value as any)}
+                  className="bg-button-bg border border-panel-border rounded-lg px-2 py-1.5 text-xs text-text-main outline-none focus:border-[var(--color-accent)] cursor-pointer"
+                >
+                  <option value="none">None</option>
+                  <option value="small">Small Grid</option>
+                  <option value="large">Large Grid</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] text-text-muted uppercase font-semibold">Keylight Direction</label>
+                <select 
+                  value={keylightType} 
+                  onChange={(e) => setKeylightType(e.target.value as any)}
+                  className="bg-button-bg border border-panel-border rounded-lg px-2 py-1.5 text-xs text-text-main outline-none focus:border-[var(--color-accent)] cursor-pointer"
+                >
+                  <option value="none">None</option>
+                  <option value="up">Bottom-Up</option>
+                  <option value="down">Top-Down</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] text-text-muted uppercase font-semibold">Global Text Scale</label>
+                  <span className="text-[10px] font-mono text-text-main">{globalTextScale.toFixed(2)}x</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0.1" max="3" step="0.05"
+                  value={globalTextScale} 
+                  onChange={(e) => setGlobalTextScale(parseFloat(e.target.value))}
+                  className="w-full accent-[var(--color-accent)]"
+                />
+              </div>
+
+              {backgroundAudioUrl && (
+                <div className="flex flex-col gap-1 border-t border-panel-border pt-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[10px] text-text-muted uppercase font-semibold">BGM Volume</label>
+                    <span className="text-[10px] font-mono text-text-main">{Math.round(backgroundAudioVolume * 100)}%</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" max="1" step="0.05"
+                    value={backgroundAudioVolume} 
+                    onChange={(e) => setBackgroundAudioVolume(parseFloat(e.target.value))}
+                    className="w-full accent-[var(--color-accent)]"
+                  />
+                </div>
+              )}
+
+              <div className="pt-1 flex flex-col gap-1.5">
+                <button 
+                  onClick={() => {
+                    applyDefaultsToProject();
+                    addToast('Applied current defaults to project elements', 'success');
+                  }} 
+                  className="w-full bg-[var(--color-accent)] hover:opacity-90 text-white px-3 py-2 rounded-xl font-semibold transition-all shadow-sm text-xs flex items-center justify-center gap-2"
+                >
+                  Apply Defaults to Current Elements
+                </button>
+
+                <button 
+                  onClick={() => {
+                    setShowSettings(true);
+                    setIsOpen(false);
+                  }}
+                  className="text-xs text-text-muted hover:text-text-main text-center w-full py-1"
+                >
+                  Open Full Settings
+                </button>
+              </div>
+            </div>
+          )}
+
           </div>
         </div>
       )}
-    </div>
+
+      <div className="absolute right-4 sm:right-6 bottom-4 sm:bottom-6 flex items-center justify-center z-[70]">
+        <button 
+          onClick={toggleOpen} 
+          className={`w-12 h-12 sm:w-14 sm:h-14 bg-text-main text-app-bg rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all ${isOpen ? 'rotate-45 bg-[var(--color-accent)] text-white' : 'rotate-0'}`}
+          title="Tools & Add Menu"
+        >
+          <Plus size={24} />
+        </button>
+      </div>
+    </>
   );
 }
+
 

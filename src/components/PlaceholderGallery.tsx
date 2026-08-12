@@ -347,30 +347,30 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
           </button>
         </div>
         
-        <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto flex-wrap sm:flex-nowrap">
-          <div className="flex items-center gap-2 flex-1 sm:flex-initial">
+        <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto flex-wrap">
+          <div className="flex flex-wrap items-center gap-2 flex-1 sm:flex-initial">
             <button
               onClick={() => handleBulkGenerate('cloudflare')}
               disabled={isBulkGenerating || pairs.filter(p => !p.placeholder.content).length === 0}
-              className="bg-orange-600 hover:bg-orange-500 border border-transparent rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm text-white outline-none focus:border-panel-border whitespace-nowrap disabled:opacity-50 flex items-center gap-2"
+              className="bg-orange-600 hover:bg-orange-500 border border-transparent rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs text-white outline-none focus:border-panel-border whitespace-nowrap disabled:opacity-50 flex items-center gap-1.5"
             >
-              {isBulkGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+              {isBulkGenerating ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
               Bulk Gen (CF)
             </button>
             <button
               onClick={() => handleBulkGenerate('puter')}
               disabled={isBulkGenerating || pairs.filter(p => !p.placeholder.content).length === 0}
-              className="bg-[var(--color-accent)] hover:opacity-80 border border-transparent rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm text-text-main outline-none focus:border-panel-border whitespace-nowrap disabled:opacity-50 flex items-center gap-2"
+              className="bg-[var(--color-accent)] hover:opacity-80 border border-transparent rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs text-text-main outline-none focus:border-panel-border whitespace-nowrap disabled:opacity-50 flex items-center gap-1.5"
             >
-              {isBulkGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+              {isBulkGenerating ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
               Bulk Gen (Puter)
             </button>
             <button
               onClick={() => handleBulkGenerate('gemini')}
               disabled={isBulkGenerating || pairs.filter(p => !p.placeholder.content).length === 0}
-              className="bg-blue-600 hover:bg-blue-500 border border-transparent rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm text-white outline-none focus:border-panel-border whitespace-nowrap disabled:opacity-50 flex items-center gap-2"
+              className="bg-blue-600 hover:bg-blue-500 border border-transparent rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs text-white outline-none focus:border-panel-border whitespace-nowrap disabled:opacity-50 flex items-center gap-1.5"
             >
-              {isBulkGenerating ? <Loader2 size={14} className="animate-spin" /> : <Mic size={14} />}
+              {isBulkGenerating ? <Loader2 size={12} className="animate-spin" /> : <Mic size={12} />}
               Bulk Gen (Voice)
             </button>
           </div>

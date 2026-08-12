@@ -70,6 +70,8 @@ interface EditorState {
   setIsPlaying: (isPlaying: boolean) => void;
   setDuration: (duration: number) => void;
   setCanvasAspectRatio: (ratio: string) => void;
+  customFonts: string[];
+  setCustomFonts: (fonts: string[]) => void;
   setGlobalTextScale: (scale: number) => void;
   defaults: {
     text: { animationIn: string, animationOut: string, easing: string, fontFamily?: string, textEffect?: string, fontWeight?: number },
@@ -183,6 +185,8 @@ export const useStore = create<EditorState>((set) => ({
   duration: 10000, // 10 seconds default
   canvasAspectRatio: '9/16',
   globalTextScale: 1,
+  customFonts: [],
+  setCustomFonts: (fonts) => set({ customFonts: fonts }),
   canvasScale: 1,
   defaults: {
     text: { animationIn: 'fade-slide-up', animationOut: 'fade-slide-up', easing: 'ease-in-out', fontFamily: 'Instrument Sans', textEffect: 'none', fontWeight: 600 },
@@ -283,7 +287,10 @@ export const useStore = create<EditorState>((set) => ({
 
     return { canvasAspectRatio: ratio, elements };
   }),
-  setCanvasScale: (scale) => set({ canvasScale: scale }),
+  setCanvasScale: (scale) => set((state) => {
+    if (Math.abs(state.canvasScale - scale) < 0.001) return state;
+    return { canvasScale: scale };
+  }),
   setGlobalTextScale: (scale) => set({ globalTextScale: scale }),
   updateDefaults: (type, updates) => set((state) => ({
     defaults: {

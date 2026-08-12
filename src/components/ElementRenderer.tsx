@@ -34,6 +34,21 @@ export const ElementRenderer: React.FC<{ element: EditorElement }> = ({ element 
     }
   }, [isEditingText]);
 
+  useEffect(() => {
+    const aRef = audioRef.current;
+    const vRef = videoRef.current;
+    return () => {
+      if (aRef) {
+        aRef.pause();
+        aRef.removeAttribute('src');
+      }
+      if (vRef) {
+        vRef.pause();
+        vRef.removeAttribute('src');
+      }
+    };
+  }, []);
+
   const baseOpacity = element.opacity ?? 1;
   let currentOpacity = baseOpacity;
   let currentScale = 1;
@@ -245,15 +260,31 @@ export const ElementRenderer: React.FC<{ element: EditorElement }> = ({ element 
     <Rnd
       position={{ x: currentX, y: currentY }}
       size={{ width: element.width, height: element.height }}
+      onDragStart={() => {
+        useStore.getState().saveHistory();
+      }}
+      onDrag={(e, d) => {
+        updateElement(element.id, { x: d.x, y: d.y }, true);
+      }}
       onDragStop={(e, d) => {
-        updateElement(element.id, { x: d.x, y: d.y });
+        updateElement(element.id, { x: d.x, y: d.y }, true);
+      }}
+      onResizeStart={() => {
+        useStore.getState().saveHistory();
+      }}
+      onResize={(e, direction, ref, delta, position) => {
+        updateElement(element.id, {
+          width: parseInt(ref.style.width),
+          height: parseInt(ref.style.height),
+          ...position,
+        }, true);
       }}
       onResizeStop={(e, direction, ref, delta, position) => {
         updateElement(element.id, {
           width: parseInt(ref.style.width),
           height: parseInt(ref.style.height),
           ...position,
-        });
+        }, true);
       }}
       onClick={(e: any) => {
         e.stopPropagation();

@@ -86,22 +86,23 @@ export function ProjectMenu() {
   };
   
   const handleBackToProjects = () => {
+    useStore.getState().setIsPlaying(false);
     setCurrentProjectId(null);
     setIsOpen(false);
   };
 
   return (
-    <div className="absolute left-6 bottom-6 flex flex-col-reverse items-center gap-3 z-50" ref={ref}>
+    <div className="absolute left-4 sm:left-6 bottom-4 sm:bottom-6 flex flex-col-reverse items-start gap-3 z-50" ref={ref}>
       <button 
         onClick={() => setIsOpen(!isOpen)} 
-        className={`w-14 h-14 bg-button-bg text-text-main border border-panel-border rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all z-10 ${isOpen ? 'bg-[var(--color-accent)] border-[var(--color-accent)] text-white' : 'hover:bg-button-hover'}`}
+        className={`w-12 h-12 sm:w-14 sm:h-14 bg-button-bg text-text-main border border-panel-border rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all z-10 ${isOpen ? 'bg-[var(--color-accent)] border-[var(--color-accent)] text-white' : 'hover:bg-button-hover'}`}
         title="Project Menu"
       >
         <Menu size={24} />
       </button>
 
       {isOpen && (
-        <div className="bg-button-bg border border-panel-border p-2 rounded-2xl shadow-2xl mb-2 animate-in fade-in slide-in-from-bottom-4 zoom-in-95 duration-200">
+        <div className="bg-button-bg border border-panel-border p-2 rounded-2xl shadow-2xl mb-2 animate-in fade-in slide-in-from-bottom-4 zoom-in-95 duration-200 max-h-[50vh] sm:max-h-[60vh] overflow-y-auto custom-scrollbar max-w-[calc(100vw-2rem)]">
           <div className="grid grid-cols-2 gap-1 w-full relative group/tools">
             <button 
               onClick={handleBackToProjects} 

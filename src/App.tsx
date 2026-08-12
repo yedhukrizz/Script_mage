@@ -115,11 +115,13 @@ export default function App() {
   React.useEffect(() => {
     if (bgAudioRef.current) {
       if (isPlaying) {
-        // Sync time if it's off by more than 0.5s to prevent stuttering, but always ensure it's playing
+        // Sync time if it's off by more than 0.5s to prevent stuttering
         if (Math.abs(bgAudioRef.current.currentTime - currentTime / 1000) > 0.5) {
           bgAudioRef.current.currentTime = currentTime / 1000;
         }
-        bgAudioRef.current.play().catch(e => console.error("BG Audio play error:", e));
+        if (bgAudioRef.current.paused) {
+          bgAudioRef.current.play().catch(e => console.error("BG Audio play error:", e));
+        }
       } else {
         bgAudioRef.current.pause();
         bgAudioRef.current.currentTime = currentTime / 1000;
@@ -282,8 +284,8 @@ export default function App() {
       style={uiAccentColor !== 'rainbow' ? { '--color-accent': uiAccentColor } as any : undefined}
     >
       {/* Header */}
-      <header className="absolute top-0 left-0 right-0 h-16 flex items-center justify-between pointer-events-none z-10 px-6 mt-2">
-        <div className="flex items-center pointer-events-auto gap-4">
+      <header className="absolute top-0 left-0 right-0 h-14 sm:h-16 flex items-center justify-between pointer-events-none z-30 px-4 sm:px-6 mt-1 sm:mt-2">
+        <div className="flex items-center pointer-events-auto gap-3 sm:gap-4">
           <button 
             onClick={handleBackToGallery}
             className="w-10 h-10 bg-button-bg hover:bg-button-hover text-text-main rounded-xl flex items-center justify-center transition-all shadow-md border border-panel-border"
@@ -291,12 +293,12 @@ export default function App() {
           >
             <ChevronLeft size={20} />
           </button>
-          <img src="/favicon.ico" alt="Script Mage" className="w-10 h-10 object-contain drop-shadow-md" />
+          <img src="/favicon.ico" alt="Script Mage" className="w-9 h-9 sm:w-10 sm:h-10 object-contain drop-shadow-md" />
         </div>
       </header>
 
       {/* Main Content (Canvas Area) */}
-      <main className="flex-1 min-h-0 bg-app-bg flex items-center justify-center relative p-8 sm:p-12 pb-24 group perspective-[1000px] overflow-visible">
+      <main className="flex-1 min-h-0 bg-app-bg flex items-center justify-center relative p-4 sm:p-12 pb-20 sm:pb-24 group perspective-[1000px] overflow-hidden">
         {backgroundAudioUrl && (
           <audio ref={bgAudioRef} src={backgroundAudioUrl} loop />
         )}
@@ -312,7 +314,7 @@ export default function App() {
           </div>
         )}
         {timelineExpanded && (
-          <div className={`absolute bottom-0 inset-x-2 z-40 bg-panel-bg overflow-hidden border-t border-panel-border shadow-[0_-10px_40px_rgba(0,0,0,0.8)] rounded-t-3xl border-x transition-all duration-300 flex flex-col max-h-[90vh] h-[90vh] ${
+          <div className={`absolute top-16 sm:top-20 bottom-0 inset-x-2 z-40 bg-panel-bg overflow-hidden border-t border-panel-border shadow-[0_-10px_40px_rgba(0,0,0,0.8)] rounded-t-3xl border-x transition-all duration-300 flex flex-col ${
             timelineTransparent ? 'opacity-40 hover:opacity-100 transition-opacity' : 'opacity-100'
           }`}>
             <div className="flex-1 min-h-0 flex flex-col">

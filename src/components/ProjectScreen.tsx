@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
-import { Settings, Plus, FileVideo, Clock, Trash2, Info, Edit2, Check } from 'lucide-react';
+import { Settings, Plus, FileVideo, Clock, Trash2, Info, Edit2, Check, Copy } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { SettingsModal } from './SettingsModal';
 import { AboutModal } from './AboutModal';
@@ -75,6 +75,17 @@ export function ProjectScreen() {
     }
   };
 
+  const handleDuplicateProject = (e: React.MouseEvent, project: Project) => {
+    e.stopPropagation();
+    const newProject = {
+      ...project,
+      id: uuidv4(),
+      name: `${project.name} (Copy)`,
+      lastModified: Date.now()
+    };
+    saveProjects([...projects, newProject]);
+  };
+
   const handleStartEdit = (e: React.MouseEvent, project: Project) => {
     e.stopPropagation();
     setEditingProjectId(project.id);
@@ -135,13 +146,20 @@ export function ProjectScreen() {
                 <div className="w-10 h-10 rounded-lg bg-button-bg flex items-center justify-center text-[var(--color-accent)]">
                   <FileVideo size={20} />
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                   <button 
                     onClick={(e) => handleStartEdit(e, project)}
                     className="p-2 text-text-muted hover:text-text-main transition-colors rounded-lg hover:bg-button-hover"
                     title="Rename"
                   >
                     <Edit2 size={16} />
+                  </button>
+                  <button 
+                    onClick={(e) => handleDuplicateProject(e, project)}
+                    className="p-2 text-text-muted hover:text-text-main transition-colors rounded-lg hover:bg-button-hover"
+                    title="Duplicate"
+                  >
+                    <Copy size={16} />
                   </button>
                   <button 
                     onClick={(e) => handleDeleteProject(e, project.id)}

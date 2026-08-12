@@ -48,7 +48,7 @@ const fonts = [
   { name: 'M PLUS 1' }
 ];
 
-const ThickSlider = ({ label, value, min, max, step = 1, onChange, onChangeEnd, unit = '' }: any) => (
+const ThickSlider = ({ label, value, min, max, step = 1, onChange, onChangeStart, unit = '' }: any) => (
   <div className="flex flex-col gap-2 mb-4">
     <div className="flex justify-between items-center text-xs text-text-muted font-medium px-1">
       <span>{label}</span>
@@ -61,8 +61,7 @@ const ThickSlider = ({ label, value, min, max, step = 1, onChange, onChangeEnd, 
       step={step} 
       value={value} 
       onChange={(e) => onChange(Number(e.target.value))} 
-      onPointerUp={onChangeEnd}
-      onKeyUp={onChangeEnd}
+      onPointerDown={onChangeStart}
       className="w-full h-6 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md cursor-pointer transition-all active:[&::-webkit-slider-thumb]:scale-90" 
     />
   </div>
@@ -133,7 +132,7 @@ export function PropertiesPanel() {
     updateElement(selectedElement.id, { [field]: value }, skipHistory);
   };
 
-  const handleEnd = () => {
+  const handleStart = () => {
     saveHistory();
   };
 
@@ -182,12 +181,12 @@ export function PropertiesPanel() {
               <>
                 {selectedElement.type !== 'audio' && (
                   <>
-                    <ThickSlider label="X Position" value={selectedElement.x} min={0} max={1920} onChange={(v: number) => handleChange('x', v, true)} onChangeEnd={handleEnd} unit="px" />
-                    <ThickSlider label="Y Position" value={selectedElement.y} min={0} max={1080} onChange={(v: number) => handleChange('y', v, true)} onChangeEnd={handleEnd} unit="px" />
-                    <ThickSlider label="Width" value={selectedElement.width} min={10} max={1000} onChange={(v: number) => handleChange('width', v, true)} onChangeEnd={handleEnd} unit="px" />
-                    <ThickSlider label="Height" value={selectedElement.height} min={10} max={1000} onChange={(v: number) => handleChange('height', v, true)} onChangeEnd={handleEnd} unit="px" />
-                    <ThickSlider label="Rotation" value={selectedElement.rotation} min={-180} max={180} onChange={(v: number) => handleChange('rotation', v, true)} onChangeEnd={handleEnd} unit="°" />
-                    <ThickSlider label="Opacity" value={selectedElement.opacity} min={0} max={1} step={0.01} onChange={(v: number) => handleChange('opacity', v, true)} onChangeEnd={handleEnd} />
+                    <ThickSlider label="X Position" value={selectedElement.x} min={0} max={1920} onChange={(v: number) => handleChange('x', v, true)} onChangeStart={handleStart} unit="px" />
+                    <ThickSlider label="Y Position" value={selectedElement.y} min={0} max={1080} onChange={(v: number) => handleChange('y', v, true)} onChangeStart={handleStart} unit="px" />
+                    <ThickSlider label="Width" value={selectedElement.width} min={10} max={1000} onChange={(v: number) => handleChange('width', v, true)} onChangeStart={handleStart} unit="px" />
+                    <ThickSlider label="Height" value={selectedElement.height} min={10} max={1000} onChange={(v: number) => handleChange('height', v, true)} onChangeStart={handleStart} unit="px" />
+                    <ThickSlider label="Rotation" value={selectedElement.rotation} min={-180} max={180} onChange={(v: number) => handleChange('rotation', v, true)} onChangeStart={handleStart} unit="°" />
+                    <ThickSlider label="Opacity" value={selectedElement.opacity} min={0} max={1} step={0.01} onChange={(v: number) => handleChange('opacity', v, true)} onChangeStart={handleStart} />
                   </>
                 )}
               </>
@@ -195,18 +194,18 @@ export function PropertiesPanel() {
 
             {activeTab === 'time' && (
               <>
-                <ThickSlider label="Start Time" value={selectedElement.startTime / 1000} min={0} max={duration / 1000} step={0.1} onChange={(v: number) => handleChange('startTime', v * 1000, true)} onChangeEnd={handleEnd} unit="s" />
-                <ThickSlider label="End Time" value={selectedElement.endTime / 1000} min={0} max={duration / 1000} step={0.1} onChange={(v: number) => handleChange('endTime', v * 1000, true)} onChangeEnd={handleEnd} unit="s" />
+                <ThickSlider label="Start Time" value={selectedElement.startTime / 1000} min={0} max={duration / 1000} step={0.1} onChange={(v: number) => handleChange('startTime', v * 1000, true)} onChangeStart={handleStart} unit="s" />
+                <ThickSlider label="End Time" value={selectedElement.endTime / 1000} min={0} max={duration / 1000} step={0.1} onChange={(v: number) => handleChange('endTime', v * 1000, true)} onChangeStart={handleStart} unit="s" />
               </>
             )}
 
             {activeTab === 'media' && hasMedia && (
               <>
                 {(selectedElement.type === 'video' || selectedElement.type === 'audio') && (
-                  <ThickSlider label="Volume" value={selectedElement.volume ?? 1} min={0} max={1} step={0.05} onChange={(v: number) => handleChange('volume', v, true)} onChangeEnd={handleEnd} />
+                  <ThickSlider label="Volume" value={selectedElement.volume ?? 1} min={0} max={1} step={0.05} onChange={(v: number) => handleChange('volume', v, true)} onChangeStart={handleStart} />
                 )}
                 {selectedElement.isPlaceholder && (
-                  <ThickSlider label="Dimness" value={selectedElement.mediaDimness ?? 0.5} min={0} max={1} step={0.05} onChange={(v: number) => handleChange('mediaDimness', v, true)} onChangeEnd={handleEnd} />
+                  <ThickSlider label="Dimness" value={selectedElement.mediaDimness ?? 0.5} min={0} max={1} step={0.05} onChange={(v: number) => handleChange('mediaDimness', v, true)} onChangeStart={handleStart} />
                 )}
                 {(selectedElement.type === 'image' || selectedElement.type === 'video' || selectedElement.isPlaceholder) && (
                   <div className="flex flex-col gap-2 mb-4">
@@ -251,8 +250,8 @@ export function PropertiesPanel() {
                         </optgroup>
                       </select>
                     </div>
-                    <ThickSlider label="Font Size" value={selectedElement.fontSize || 48} min={12} max={400} step={1} onChange={(v: number) => handleChange('fontSize', v, true)} onChangeEnd={handleEnd} unit="px" />
-                    <ThickSlider label="Font Weight" value={selectedElement.fontWeight || 600} min={100} max={900} step={100} onChange={(v: number) => handleChange('fontWeight', v, true)} onChangeEnd={handleEnd} />
+                    <ThickSlider label="Font Size" value={selectedElement.fontSize || 48} min={12} max={400} step={1} onChange={(v: number) => handleChange('fontSize', v, true)} onChangeStart={handleStart} unit="px" />
+                    <ThickSlider label="Font Weight" value={selectedElement.fontWeight || 600} min={100} max={900} step={100} onChange={(v: number) => handleChange('fontWeight', v, true)} onChangeStart={handleStart} />
                   </>
                 )}
               </>

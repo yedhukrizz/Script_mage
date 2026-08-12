@@ -507,7 +507,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                     value={cloudflareWorkerUrl} 
                     onChange={(e) => setCloudflareWorkerUrl(e.target.value)}
                     placeholder="https://your-worker.workers.dev"
-                    className="bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border"
+                    className="bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border w-full max-w-full min-w-0"
                   />
                   <p className="text-xs text-text-muted mt-1">
                     Deploy a Cloudflare Worker using Workers AI to generate images for free.
@@ -530,7 +530,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                       value={geminiApiKey} 
                       onChange={(e) => setGeminiApiKey(e.target.value)}
                       placeholder="AIzaSy..."
-                      className="bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border"
+                      className="bg-button-bg border border-panel-border rounded px-3 py-2 text-sm text-text-main outline-none focus:border-panel-border w-full max-w-full min-w-0"
                     />
                     <p className="text-xs text-text-muted mt-1">
                       Required for generating voice and scripts using Gemini. Your key is stored only in your browser.

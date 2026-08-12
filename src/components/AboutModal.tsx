@@ -66,14 +66,14 @@ export function AboutModal({ onClose }: AboutModalProps) {
               <p className="text-sm text-text-muted">
                 Download the standalone version of Script Mage for Windows, Mac, and Linux to edit without an internet connection.
               </p>
-              <div className="flex gap-3 pt-2">
-                <a href="#" className="flex-1 flex justify-center items-center gap-2 bg-button-bg hover:bg-button-hover border border-panel-border transition-colors text-text-main px-4 py-2 rounded-lg text-sm font-medium">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2">
+                <a href="#" className="flex justify-center items-center gap-2 bg-button-bg hover:bg-button-hover border border-panel-border transition-colors text-text-main px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-center">
                   Windows (.exe)
                 </a>
-                <a href="#" className="flex-1 flex justify-center items-center gap-2 bg-button-bg hover:bg-button-hover border border-panel-border transition-colors text-text-main px-4 py-2 rounded-lg text-sm font-medium">
+                <a href="#" className="flex justify-center items-center gap-2 bg-button-bg hover:bg-button-hover border border-panel-border transition-colors text-text-main px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-center">
                   Mac (.dmg)
                 </a>
-                <a href="#" className="flex-1 flex justify-center items-center gap-2 bg-button-bg hover:bg-button-hover border border-panel-border transition-colors text-text-main px-4 py-2 rounded-lg text-sm font-medium">
+                <a href="#" className="flex justify-center items-center gap-2 bg-button-bg hover:bg-button-hover border border-panel-border transition-colors text-text-main px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-center">
                   Linux (.AppImage)
                 </a>
               </div>

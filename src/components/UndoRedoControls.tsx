@@ -27,11 +27,11 @@ export function UndoRedoControls() {
   }, [undo, redo]);
 
   return (
-    <div className="absolute left-24 bottom-6 flex gap-2 z-50">
+    <div className="absolute left-[4.5rem] sm:left-24 bottom-4 sm:bottom-6 flex gap-2 z-50">
       <button 
         onClick={undo}
         disabled={past.length === 0}
-        className="w-14 h-14 bg-button-bg text-text-main border border-panel-border rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100 hover:bg-button-hover"
+        className="w-12 h-12 sm:w-14 sm:h-14 bg-button-bg text-text-main border border-panel-border rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100 hover:bg-button-hover"
         title="Undo (Ctrl+Z)"
       >
         <Undo2 size={24} />
@@ -39,7 +39,7 @@ export function UndoRedoControls() {
       <button 
         onClick={redo}
         disabled={future.length === 0}
-        className="w-14 h-14 bg-button-bg text-text-main border border-panel-border rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100 hover:bg-button-hover"
+        className="w-12 h-12 sm:w-14 sm:h-14 bg-button-bg text-text-main border border-panel-border rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100 hover:bg-button-hover"
         title="Redo (Ctrl+Shift+Z)"
       >
         <Redo2 size={24} />

@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { X, Mic, Play, Loader2, Wand2, Search, Terminal } from 'lucide-react';
 import { EditorElement } from '../types';
 import { TTS_VOICES } from '../lib/ttsVoices';
+import { motion } from 'motion/react';
 
 interface TTSModalProps {
   element?: EditorElement;
@@ -316,8 +317,20 @@ export function TTSModal({ element, onClose }: TTSModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm p-4">
-      <div className="bg-app-bg text-text-main w-full max-w-3xl rounded-2xl flex flex-col pointer-events-auto shadow-2xl relative overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[90vh]">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm p-4"
+    >
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        className="bg-app-bg text-text-main w-full max-w-3xl sm:rounded-[32px] rounded-2xl flex flex-col pointer-events-auto shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] border border-white/5 relative overflow-hidden max-h-[90vh]"
+      >
         
         <div className="flex flex-col flex-1 min-h-0">
           <div className="flex items-center justify-between p-4 sm:p-5 border-b border-panel-border shrink-0 bg-app-bg z-10 flex-wrap gap-3">
@@ -510,7 +523,7 @@ export function TTSModal({ element, onClose }: TTSModalProps) {
               </div>
             </div>
           </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

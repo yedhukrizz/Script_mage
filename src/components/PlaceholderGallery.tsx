@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { X, Copy, Image as ImageIcon, Video, Upload, Check, Wand2, ChevronDown, Sparkles, Loader2, Mic } from 'lucide-react';
 import { PROMPT_ENHANCERS } from '../lib/promptEnhancers';
+import { motion } from 'motion/react';
 
 interface PlaceholderGalleryProps {
   onClose: () => void;
@@ -328,7 +329,13 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex flex-col z-[100] animate-in fade-in duration-200">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 bg-black/90 backdrop-blur-md flex flex-col z-[100]"
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-4 sm:p-6 border-b border-panel-border bg-app-bg shrink-0 flex-wrap gap-4">
         <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -589,6 +596,6 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

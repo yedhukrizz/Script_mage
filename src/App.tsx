@@ -11,6 +11,7 @@ import { ProjectMenu } from './components/ProjectMenu';
 import { AboutModal } from './components/AboutModal';
 import { ToastContainer } from './components/ToastContainer';
 import { TTS_VOICES } from './lib/ttsVoices';
+import { motion, AnimatePresence } from 'motion/react';
 
 import { TTSModal } from './components/TTSModal';
 import { TranslateModal } from './components/TranslateModal';
@@ -267,23 +268,31 @@ export default function App() {
   const uiTheme = useStore((state) => state.uiTheme);
   const uiAccentColor = useStore((state) => state.uiAccentColor);
 
-  if (!currentProjectId) {
-    return (
-      <div 
-        className={`flex flex-col h-[100dvh] bg-app-bg text-text-main overflow-hidden font-sans ${uiTheme === 'light' ? 'theme-light' : uiTheme === 'black' ? 'theme-black' : ''} ${uiAccentColor === 'rainbow' ? 'rainbow-accent' : ''}`}
-        style={uiAccentColor !== 'rainbow' ? { '--color-accent': uiAccentColor } as any : undefined}
-      >
-        <ProjectScreen />
-      </div>
-    );
-  }
-
   return (
-    <div 
-      className={`flex flex-col h-[100dvh] bg-app-bg text-text-main overflow-hidden font-sans ${uiTheme === 'light' ? 'theme-light' : uiTheme === 'black' ? 'theme-black' : ''} ${uiAccentColor === 'rainbow' ? 'rainbow-accent' : ''}`}
-      style={uiAccentColor !== 'rainbow' ? { '--color-accent': uiAccentColor } as any : undefined}
-    >
-      {/* Header */}
+    <AnimatePresence mode="wait">
+      {!currentProjectId ? (
+        <motion.div 
+          key="project-screen"
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 1.02 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className={`flex flex-col h-[100dvh] bg-app-bg text-text-main overflow-hidden font-sans ${uiTheme === 'light' ? 'theme-light' : uiTheme === 'black' ? 'theme-black' : ''} ${uiAccentColor === 'rainbow' ? 'rainbow-accent' : ''}`}
+          style={uiAccentColor !== 'rainbow' ? { '--color-accent': uiAccentColor } as any : undefined}
+        >
+          <ProjectScreen />
+        </motion.div>
+      ) : (
+        <motion.div 
+          key="editor-screen"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className={`flex flex-col h-[100dvh] bg-app-bg text-text-main overflow-hidden font-sans ${uiTheme === 'light' ? 'theme-light' : uiTheme === 'black' ? 'theme-black' : ''} ${uiAccentColor === 'rainbow' ? 'rainbow-accent' : ''}`}
+          style={uiAccentColor !== 'rainbow' ? { '--color-accent': uiAccentColor } as any : undefined}
+        >
+          {/* Header */}
       <header className="absolute top-0 left-0 right-0 h-14 sm:h-16 flex items-center justify-between pointer-events-none z-30 px-4 sm:px-6 mt-1 sm:mt-2">
         <div className="flex items-center pointer-events-auto gap-3 sm:gap-4">
           <button 
@@ -335,44 +344,58 @@ export default function App() {
       </div>
       
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-      {showScriptModal && <ScriptModal onClose={() => setShowScriptModal(false)} />}
-      {showAboutModal && <AboutModal onClose={() => setShowAboutModal(false)} />}
-      {showGlobalTTSModal && <TTSModal onClose={() => setShowGlobalTTSModal(false)} />}
-      {showGlobalTranslateModal && <TranslateModal onClose={() => setShowGlobalTranslateModal(false)} />}
-      {showPlaceholderGallery && <PlaceholderGallery onClose={() => setShowPlaceholderGallery(false)} />}
-      
-      {showUnsavedModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-panel-bg border border-panel-border rounded-3xl p-8 max-w-sm w-full shadow-2xl flex flex-col gap-6 animate-in zoom-in-95 fade-in duration-200">
-            <div>
-              <h3 className="text-xl font-bold text-text-main mb-2">Unsaved Changes</h3>
-              <p className="text-sm text-text-muted">You have unsaved changes in this project. Do you want to save before leaving?</p>
-            </div>
-            <div className="flex flex-col gap-3">
-              <button 
-                onClick={handleSaveAndGo}
-                className="w-full py-3 bg-[var(--color-accent)] text-white rounded-xl font-semibold hover:opacity-90 transition-opacity"
-              >
-                Save & Go to Gallery
-              </button>
-              <button 
-                onClick={handleDontSaveAndGo}
-                className="w-full py-3 bg-button-bg text-text-main rounded-xl font-semibold hover:bg-button-hover transition-colors border border-panel-border"
-              >
-                Don't Save
-              </button>
-              <button 
-                onClick={() => setShowUnsavedModal(false)}
-                className="w-full py-3 bg-transparent text-text-muted hover:text-text-main rounded-xl font-semibold transition-colors mt-2"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {showScriptModal && <ScriptModal onClose={() => setShowScriptModal(false)} />}
+        {showAboutModal && <AboutModal onClose={() => setShowAboutModal(false)} />}
+        {showGlobalTTSModal && <TTSModal onClose={() => setShowGlobalTTSModal(false)} />}
+        {showGlobalTranslateModal && <TranslateModal onClose={() => setShowGlobalTranslateModal(false)} />}
+        {showPlaceholderGallery && <PlaceholderGallery onClose={() => setShowPlaceholderGallery(false)} />}
+        
+        {showUnsavedModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+          >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-panel-bg border border-panel-border rounded-3xl p-8 max-w-sm w-full shadow-2xl flex flex-col gap-6"
+            >
+              <div>
+                <h3 className="text-xl font-bold text-text-main mb-2">Unsaved Changes</h3>
+                <p className="text-sm text-text-muted">You have unsaved changes in this project. Do you want to save before leaving?</p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={handleSaveAndGo}
+                  className="w-full py-3 bg-[var(--color-accent)] text-white rounded-xl font-semibold hover:opacity-90 transition-opacity"
+                >
+                  Save & Go to Gallery
+                </button>
+                <button 
+                  onClick={handleDontSaveAndGo}
+                  className="w-full py-3 bg-button-bg text-text-main rounded-xl font-semibold hover:bg-button-hover transition-colors border border-panel-border"
+                >
+                  Don't Save
+                </button>
+                <button 
+                  onClick={() => setShowUnsavedModal(false)}
+                  className="w-full py-3 bg-transparent text-text-muted hover:text-text-main rounded-xl font-semibold transition-colors mt-2"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <ToastContainer />
-    </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

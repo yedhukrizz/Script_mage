@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Menu, Save, Upload, Download, Settings, LayoutGrid, Info } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import { motion, AnimatePresence } from 'motion/react';
 
 export function ProjectMenu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -101,8 +102,15 @@ export function ProjectMenu() {
         <Menu size={24} />
       </button>
 
-      {isOpen && (
-        <div className="bg-button-bg border border-panel-border p-2 rounded-2xl shadow-2xl mb-2 animate-in fade-in slide-in-from-bottom-4 zoom-in-95 duration-200 max-h-[50vh] sm:max-h-[60vh] overflow-y-auto custom-scrollbar max-w-[calc(100vw-2rem)]">
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 15 }}
+            transition={{ duration: 0.2 }}
+            className="bg-panel-bg/95 backdrop-blur-xl border border-panel-border p-2 rounded-[24px] shadow-2xl mb-2 max-h-[50vh] sm:max-h-[60vh] overflow-y-auto custom-scrollbar max-w-[calc(100vw-2rem)]"
+          >
           <div className="grid grid-cols-2 gap-1 w-full relative group/tools">
             <button 
               onClick={handleBackToProjects} 
@@ -141,8 +149,9 @@ export function ProjectMenu() {
               <Info size={16} /> About
             </button>
           </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

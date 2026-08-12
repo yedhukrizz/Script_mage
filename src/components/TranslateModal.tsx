@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { X, Globe, Loader2, Terminal } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface TranslateModalProps {
   onClose: () => void;
@@ -84,8 +85,20 @@ export function TranslateModal({ onClose }: TranslateModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-      <div className="bg-[#121214] border border-panel-border rounded-xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh]">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4"
+    >
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        className="bg-[#121214] border border-panel-border rounded-xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh]"
+      >
         <div className="flex justify-between items-center p-4 border-b border-panel-border shrink-0">
           <div className="flex items-center gap-2">
             <Globe size={18} className="text-text-muted" />
@@ -176,7 +189,7 @@ export function TranslateModal({ onClose }: TranslateModalProps) {
             )}
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

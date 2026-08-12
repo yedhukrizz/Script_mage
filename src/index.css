@@ -60,33 +60,33 @@
 }
 
 :root {
-  --theme-app-bg: #0a0a0a;
-  --theme-panel-bg: #121212;
-  --theme-panel-border: rgba(39, 39, 42, 0.5); /* zinc-800/50 */
+  --theme-app-bg: #09090b;
+  --theme-panel-bg: rgba(24, 24, 27, 0.6);
+  --theme-panel-border: rgba(255, 255, 255, 0.08);
   --theme-text-main: #ffffff;
-  --theme-text-muted: #a1a1aa; /* zinc-400 */
-  --theme-button-bg: #18181b; /* zinc-900 */
-  --theme-button-hover: #27272a; /* zinc-800 */
+  --theme-text-muted: #a1a1aa;
+  --theme-button-bg: rgba(255, 255, 255, 0.04);
+  --theme-button-hover: rgba(255, 255, 255, 0.08);
 }
 
 .theme-light {
-  --theme-app-bg: #f4f4f5;
-  --theme-panel-bg: #ffffff;
-  --theme-panel-border: rgba(228, 228, 231, 1);
+  --theme-app-bg: #fafafa;
+  --theme-panel-bg: rgba(255, 255, 255, 0.8);
+  --theme-panel-border: rgba(0, 0, 0, 0.06);
   --theme-text-main: #09090b;
   --theme-text-muted: #52525b;
-  --theme-button-bg: #e4e4e7;
-  --theme-button-hover: #d4d4d8;
+  --theme-button-bg: rgba(0, 0, 0, 0.03);
+  --theme-button-hover: rgba(0, 0, 0, 0.06);
 }
 
 .theme-black {
   --theme-app-bg: #000000;
-  --theme-panel-bg: #000000;
-  --theme-panel-border: rgba(39, 39, 42, 0.5);
+  --theme-panel-bg: rgba(25, 25, 25, 0.5);
+  --theme-panel-border: rgba(255, 255, 255, 0.08);
   --theme-text-main: #ffffff;
   --theme-text-muted: #a1a1aa;
-  --theme-button-bg: #121212;
-  --theme-button-hover: #18181b;
+  --theme-button-bg: rgba(255, 255, 255, 0.05);
+  --theme-button-hover: rgba(255, 255, 255, 0.1);
 }
 
 @keyframes rainbow-accent {

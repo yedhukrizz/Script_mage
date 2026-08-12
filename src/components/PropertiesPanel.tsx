@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
 import { Trash2, Mic, Globe, Move, Type, Image as ImageIcon, Activity, Clock, SlidersHorizontal, Settings2, Play, X } from 'lucide-react';
 import { TTSModal } from './TTSModal';
+import { motion, AnimatePresence } from 'motion/react';
 
 const easings = {
   'linear': 'Linear',
@@ -170,11 +171,18 @@ export function PropertiesPanel() {
     <div className="relative flex flex-col items-center pointer-events-auto" ref={containerRef} onMouseDown={(e) => e.stopPropagation()}>
       
       {/* Pop-up Inspector Pill */}
-      {activeTab && (
-        <div className="mb-4 bg-[#18181b]/95 backdrop-blur-xl p-5 rounded-[24px] shadow-2xl border border-white/10 w-[340px] max-w-[90vw] animate-in slide-in-from-bottom-2 fade-in duration-200">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-sm font-semibold text-white capitalize">{activeTab} Properties</h3>
-          </div>
+      <AnimatePresence>
+        {activeTab && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="mb-4 bg-[#18181b]/95 backdrop-blur-xl p-5 rounded-[24px] shadow-2xl border border-white/10 w-[340px] max-w-[90vw]"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-sm font-semibold text-white capitalize">{activeTab} Properties</h3>
+            </div>
 
           <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar pointer-events-auto">
             {activeTab === 'transform' && (
@@ -340,11 +348,17 @@ export function PropertiesPanel() {
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Main Floating Pill */}
-      <div className="flex items-center gap-1 p-1.5 bg-[#18181b]/90 backdrop-blur-xl rounded-[24px] shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-white/10 pointer-events-auto">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        className="flex items-center gap-1 p-1.5 bg-[#18181b]/90 backdrop-blur-xl rounded-[24px] shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-white/10 pointer-events-auto"
+      >
         <IconButton icon={SlidersHorizontal} onClick={() => setActiveTab(activeTab === 'transform' ? null : 'transform')} active={activeTab === 'transform'} />
         {hasAppearance && <IconButton icon={Type} onClick={() => setActiveTab(activeTab === 'appearance' ? null : 'appearance')} active={activeTab === 'appearance'} />}
         {hasMedia && <IconButton icon={ImageIcon} onClick={() => setActiveTab(activeTab === 'media' ? null : 'media')} active={activeTab === 'media'} />}
@@ -356,7 +370,7 @@ export function PropertiesPanel() {
         
         <IconButton icon={Trash2} onClick={() => removeElement(selectedElement.id)} className="text-red-400 hover:text-red-300 hover:bg-red-500/10" />
         <IconButton icon={X} onClick={() => setSelectedElementId(null)} className="text-text-muted hover:text-white" />
-      </div>
+      </motion.div>
 
       {showTTSModal && (
         <TTSModal 

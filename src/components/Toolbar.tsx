@@ -3,10 +3,11 @@ import { useStore } from '../store/useStore';
 import { 
   Type, Image as ImageIcon, Square, Circle, Plus, Terminal, Sparkles, 
   Settings, LayoutTemplate, Mic, Globe, ImagePlus, Palette, FastForward, 
-  ChevronLeft, Music, X
+  ChevronLeft, Music, X, Wand2
 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { ExportButton } from './ExportButton';
+import { motion, AnimatePresence } from 'motion/react';
 
 const STANDARD_FONTS = [
   'Instrument Sans', 'Playfair Display', 'Inter', 'Montserrat', 'Poppins', 
@@ -227,15 +228,24 @@ export function Toolbar() {
 
   return (
     <>
-      {isOpen && (
-        <div 
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          onClick={() => setIsOpen(false)}
-        >
-          <div 
-            className="bg-panel-bg/95 backdrop-blur-xl border border-panel-border p-3 rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[85vh] overflow-y-auto custom-scrollbar w-[320px] sm:w-[360px] select-none"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            onClick={() => setIsOpen(false)}
           >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="bg-panel-bg/95 backdrop-blur-xl border border-panel-border p-3 rounded-[24px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] max-h-[85vh] overflow-y-auto custom-scrollbar w-[320px] sm:w-[360px] select-none"
+              onClick={(e) => e.stopPropagation()}
+            >
             
             {/* Active Submenu Header */}
           {activeSubMenu !== 'main' && (
@@ -299,11 +309,11 @@ export function Toolbar() {
 
                 <button 
                   onClick={() => { setShowGlobalTTSModal(true); setIsOpen(false); }}
-                  className="flex flex-col items-center justify-center p-2 bg-[var(--color-accent)]/15 hover:bg-[var(--color-accent)]/25 text-[var(--color-accent)] rounded-xl border border-[var(--color-accent)]/30 transition-all gap-1 group"
+                  className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-panel-border/50 hover:border-[var(--color-accent)] transition-all gap-1 group"
                   title="Global Text-to-Speech"
                 >
-                  <Mic size={18} className="group-hover:scale-110 transition-transform" />
-                  <span className="text-[10px] font-semibold leading-tight text-center truncate w-full">TTS Voice</span>
+                  <Mic size={18} className="text-rose-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-medium leading-tight text-center truncate w-full">TTS Voice</span>
                 </button>
 
                 <button 
@@ -595,17 +605,23 @@ export function Toolbar() {
             </div>
           )}
 
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="absolute right-4 sm:right-6 bottom-4 sm:bottom-6 flex items-center justify-center z-[70]">
         <button 
           onClick={toggleOpen} 
-          className={`w-12 h-12 sm:w-14 sm:h-14 bg-text-main text-app-bg rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all ${isOpen ? 'rotate-45 bg-[var(--color-accent)] text-white' : 'rotate-0'}`}
+          className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all overflow-hidden ${isOpen ? 'bg-[var(--color-accent)] text-white' : 'bg-text-main text-app-bg'}`}
           title="Tools & Add Menu"
         >
-          <Plus size={24} />
+          <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${isOpen ? 'opacity-0 -rotate-90 scale-50' : 'opacity-100 rotate-0 scale-100'}`}>
+            <Wand2 size={24} />
+          </div>
+          <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${isOpen ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 rotate-90 scale-50'}`}>
+            <X size={24} />
+          </div>
         </button>
       </div>
     </>

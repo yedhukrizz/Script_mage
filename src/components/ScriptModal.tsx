@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { v4 as uuidv4 } from 'uuid';
+import { motion } from 'motion/react';
 
 const ENHANCEMENTS = [
   'Hooks', 'Viral worthy', 'ADHD style', 'Value packed', 
@@ -191,8 +192,20 @@ Rules:
   };
 
   return (
-    <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 backdrop-blur-xl p-3 sm:p-4 md:p-6 animate-in fade-in duration-200">
-      <div className="bg-panel-bg/85 backdrop-blur-2xl border border-white/10 text-text-main w-full max-w-5xl rounded-2xl sm:rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] flex flex-col my-auto max-h-[92vh] sm:max-h-[88vh] overflow-hidden pointer-events-auto relative">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 backdrop-blur-xl p-3 sm:p-4 md:p-6"
+    >
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        className="bg-panel-bg/85 backdrop-blur-2xl border border-white/10 text-text-main w-full max-w-5xl rounded-2xl sm:rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] flex flex-col my-auto max-h-[92vh] sm:max-h-[88vh] overflow-hidden pointer-events-auto relative"
+      >
         
         {/* Modal Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-white/10 bg-panel-bg/60 backdrop-blur-md shrink-0">
@@ -513,8 +526,8 @@ Rules:
           </div>
         )}
 
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 

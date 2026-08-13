@@ -271,160 +271,141 @@ export function Toolbar() {
     <>
       <AnimatePresence>
         {isOpen && (
+          <>
+          <div className="fixed inset-0 z-[140]" onClick={() => setIsOpen(false)} />
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className={`fixed inset-0 z-[60] flex items-center justify-center transition-all duration-300 ${isDraggingSlider ? "bg-transparent " : "bg-black/40 "}`}
-            onClick={() => setIsOpen(false)}
+            className="absolute bottom-[100%] right-0 mb-4 z-[150] flex flex-col justify-end items-end origin-bottom-right"
           >
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className={`transition-all duration-300 flex flex-col max-h-[85vh] w-[320px] sm:w-[360px] select-none ${isDraggingSlider ? "overflow-visible" : "glass-panel rounded-[24px] overflow-hidden"}`}
+              className={`transition-all duration-300 flex flex-col max-h-[60vh] sm:max-h-[420px] w-[92vw] max-w-[360px] select-none ${isDraggingSlider ? "overflow-visible" : "glass-panel rounded-[24px] overflow-hidden"}`}
               onClick={(e) => e.stopPropagation()}
             >
-            
-          {/* Active Submenu Header (Fixed outside scroll area) */}
-          {activeSubMenu !== 'main' && (
-            <div className={`shrink-0 flex items-center justify-between border-b border-panel-border px-4 py-3 glass-panel border-x-0 border-t-0 rounded-none z-20 transition-opacity duration-300 ${isDraggingSlider ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
-              <button 
-                onClick={() => setActiveSubMenu('main')}
-                className="flex items-center gap-1 text-xs font-semibold text-[var(--color-accent)] hover:underline"
-              >
-                <ChevronLeft size={16} />
-                <span>Back to Menu</span>
-              </button>
-              <span className="text-xs font-bold text-text-main capitalize">
-                {activeSubMenu === 'font' && 'Global Font'}
-                {activeSubMenu === 'background' && 'Canvas Background'}
-                {activeSubMenu === 'speed' && 'Timeline Speed'}
-                {activeSubMenu === 'settings' && 'Quick Settings'}
-                {activeSubMenu === 'prompts' && 'AI Prompts'}
-              </span>
-            </div>
-          )}
-
-          {/* Main Menu Header (Fixed outside scroll area) */}
-          {activeSubMenu === 'main' && (
-            <div className={`shrink-0 px-4 pt-4 pb-3 glass-panel border-x-0 border-t-0 rounded-none z-20 border-b border-panel-border transition-opacity duration-300 ${isDraggingSlider ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
-              <div className="flex items-center gap-2 bg-button-bg/80  p-1.5 rounded-xl border border-panel-border">
-                <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wider pl-1.5 shrink-0">Ratio:</span>
-                <select 
-                  value={canvasAspectRatio} 
-                  onChange={(e) => setCanvasAspectRatio(e.target.value)}
-                  className="appearance-none bg-button-bg border border-panel-border rounded-lg w-full text-center h-7 text-xs font-semibold text-text-main outline-none focus:border-[var(--color-accent)] cursor-pointer hover:bg-button-hover transition-colors px-2"
-                >
-                  <option value="9/16">9:16 Portrait (Reels/Shorts)</option>
-                  <option value="16/9">16:9 Landscape (YouTube)</option>
-                  <option value="1/1">1:1 Square (Feed)</option>
-                  <option value="4/5">4:5 Vertical (Instagram)</option>
-                </select>
-              </div>
-            </div>
-          )}
-
-          {/* Scrollable Content Area */}
-          <div className={`flex-1 overflow-x-hidden custom-scrollbar p-4 transition-all duration-300 ${isDraggingSlider ? "overflow-y-visible" : "overflow-y-auto"}`}>
-
-          {/* MAIN MENU VIEW */}
-          {activeSubMenu === 'main' && (
-            <div className="flex flex-col gap-2.5">
-
-              {/* Tools Section */}
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider px-1">Tools</span>
-                <div className="grid grid-cols-4 gap-1.5">
+              {/* Active Submenu Header (Fixed outside scroll area) */}
+              {activeSubMenu !== 'main' && (
+                <div className={`shrink-0 flex items-center justify-between px-4 py-3 bg-panel-bg/90 border-b border-panel-border/50 rounded-t-[24px] z-20 transition-opacity duration-300 ${isDraggingSlider ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
                   <button 
-                    onClick={() => setActiveSubMenu('prompts')}
-                    className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-transparent hover:border-[var(--color-accent)] transition-all gap-1 group"
-                    title="Prompts & Generators"
+                    onClick={() => setActiveSubMenu('main')}
+                    className="flex items-center gap-1 text-xs font-semibold text-[var(--color-accent)] hover:underline"
                   >
-                    <Sparkles size={18} className="text-[var(--color-accent)] group-hover:scale-110 transition-transform" />
-                    <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Prompts</span>
+                    <ChevronLeft size={16} />
+                    <span>Back to Menu</span>
                   </button>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-bold text-text-main capitalize">
+                      {activeSubMenu === 'font' && 'Global Font'}
+                      {activeSubMenu === 'background' && 'Canvas Background'}
+                      {activeSubMenu === 'export' && 'Export Video'}
+                      {activeSubMenu === 'settings' && 'Settings'}
+                    </span>
+                    <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-[var(--color-accent)] transition-colors p-1" title="Close Menu">
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
 
-                  <button 
-                    onClick={() => { setShowScriptModal(true, 'paste'); setIsOpen(false); }}
-                    className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-transparent hover:border-[var(--color-accent)] transition-all gap-1 group"
-                    title="Paste Script Code"
-                  >
-                    <Terminal size={18} className="text-emerald-400 group-hover:scale-110 transition-transform" />
-                    <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Paste Script</span>
-                  </button>
+              {/* Main Menu Header (Fixed outside scroll area) */}
+              {activeSubMenu === 'main' && (
+                <div className={`shrink-0 flex items-center px-4 pt-4 pb-3 bg-panel-bg/90 rounded-t-[24px] z-20 border-b border-panel-border/50 transition-opacity duration-300 ${isDraggingSlider ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+                  <div className="flex-1 flex items-center gap-2 bg-button-bg/80 p-1.5 rounded-xl border border-panel-border">
 
-                  <button 
-                    onClick={() => { setShowGlobalTTSModal(true); setIsOpen(false); }}
-                    className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-transparent hover:border-[var(--color-accent)] transition-all gap-1 group"
-                    title="Global Text-to-Speech"
-                  >
-                    <Mic size={18} className="text-rose-400 group-hover:scale-110 transition-transform" />
-                    <span className="text-[10px] font-medium leading-tight text-center truncate w-full">TTS Voice</span>
-                  </button>
-
-                  <button 
-                    onClick={() => { setShowGlobalTranslateModal(true); setIsOpen(false); }}
-                    className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-transparent hover:border-[var(--color-accent)] transition-all gap-1 group"
-                    title="Global Translation"
-                  >
-                    <Globe size={18} className="text-sky-400 group-hover:scale-110 transition-transform" />
-                    <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Translate</span>
-                  </button>
-
-                  <button 
-                    onClick={() => { setShowTextGallery(true); setIsOpen(false); }}
-                    className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-transparent hover:border-[var(--color-accent)] transition-all gap-1 group"
-                    title="Text Gallery"
-                  >
-                    <Type size={18} className="text-pink-400 group-hover:scale-110 transition-transform" />
-                    <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Text Gallery</span>
-                  </button>
-                  
-                  <button 
-                    onClick={() => setActiveSubMenu('font')}
-                    className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-transparent hover:border-[var(--color-accent)] transition-all gap-1 group"
-                    title="Global Font"
-                  >
-                    <Type size={18} className="group-hover:scale-110 transition-transform" />
-                    <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Global Font</span>
-                  </button>
-
-                  <button 
-                    onClick={() => setActiveSubMenu('background')}
-                    className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-transparent hover:border-[var(--color-accent)] transition-all gap-1 group"
-                    title="Canvas Background"
-                  >
-                    <Palette size={18} className="group-hover:scale-110 transition-transform" />
-                    <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Canvas BG</span>
-                  </button>
-
-                  <button 
-                    onClick={() => setActiveSubMenu('speed')}
-                    className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-transparent hover:border-[var(--color-accent)] transition-all gap-1 group"
-                    title="Timeline Speed"
-                  >
-                    <FastForward size={18} className="group-hover:scale-110 transition-transform" />
-                    <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Speed</span>
-                  </button>
-
-                  <button 
-                  onClick={() => setActiveSubMenu('settings')}
-                  className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-transparent hover:border-[var(--color-accent)] transition-all gap-1 group"
-                  title="Quick Settings"
-                  >
-                    <Settings size={18} className="group-hover:scale-110 transition-transform" />
-                    <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Settings</span>
+                    <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wider pl-1.5 shrink-0">Ratio:</span>
+                    <select 
+                      value={canvasAspectRatio} 
+                      onChange={(e) => setCanvasAspectRatio(e.target.value)}
+                      className="appearance-none bg-button-bg border border-panel-border rounded-lg w-full text-center h-7 text-xs font-semibold text-text-main outline-none focus:border-[var(--color-accent)] cursor-pointer hover:bg-button-hover transition-colors px-2"
+                    >
+                      <option value="9/16">9:16 Portrait (Reels/Shorts)</option>
+                      <option value="16/9">16:9 Landscape (YouTube)</option>
+                      <option value="1/1">1:1 Square (Feed)</option>
+                      <option value="4/5">4:5 Vertical (Instagram)</option>
+                    </select>
+                  </div>
+                  <button onClick={() => setIsOpen(false)} className="ml-3 shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-button-bg hover:bg-button-hover border border-panel-border transition-colors text-text-muted hover:text-text-main" title="Close Menu">
+                    <X size={16} />
                   </button>
                 </div>
-              </div>
+              )}
 
-              {/* Add Section */}
+              {/* Scrollable Content Area */}
+              <div className={`flex-1 overflow-x-hidden custom-scrollbar p-4 transition-all duration-300 ${isDraggingSlider ? "overflow-y-visible" : "overflow-y-auto"}`}>
+                
+                {/* MAIN MENU VIEW */}
+                {activeSubMenu === 'main' && (
+                  <div className="flex flex-col gap-2.5">
+                    
+                    {/* Tools Section */}
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider px-1">Tools</span>
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                        <button 
+                          onClick={() => { setShowScriptModal(true, 'generate'); setIsOpen(false); }}
+                          className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-transparent hover:border-[var(--color-accent)] transition-all gap-1 group"
+                          title="Generate Video Script"
+                        >
+                          <Sparkles size={18} className="text-[var(--color-accent)] group-hover:scale-110 transition-transform" />
+                          <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Gen Script</span>
+                        </button>
+
+                        <button 
+                          onClick={() => { setShowPlaceholderGallery(true); setIsOpen(false); }}
+                          className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-transparent hover:border-[var(--color-accent)] transition-all gap-1 group"
+                          title="Manage Media Placeholders"
+                        >
+                          <ImageIcon size={18} className="text-amber-400 group-hover:scale-110 transition-transform" />
+                          <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Placeholders</span>
+                        </button>
+
+                        <button 
+                          onClick={() => { setShowScriptModal(true, 'paste'); setIsOpen(false); }}
+                          className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-transparent hover:border-[var(--color-accent)] transition-all gap-1 group"
+                          title="Paste Script Code"
+                        >
+                          <Terminal size={18} className="text-emerald-400 group-hover:scale-110 transition-transform" />
+                          <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Paste Script</span>
+                        </button>
+
+                        <button 
+                          onClick={() => { setShowGlobalTTSModal(true); setIsOpen(false); }}
+                          className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-transparent hover:border-[var(--color-accent)] transition-all gap-1 group"
+                          title="Global Text-to-Speech"
+                        >
+                          <Mic size={18} className="text-rose-400 group-hover:scale-110 transition-transform" />
+                          <span className="text-[10px] font-medium leading-tight text-center truncate w-full">TTS Voice</span>
+                        </button>
+
+                        <button 
+                          onClick={() => { setShowGlobalTranslateModal(true); setIsOpen(false); }}
+                          className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-transparent hover:border-[var(--color-accent)] transition-all gap-1 group"
+                          title="Global Translation"
+                        >
+                          <Globe size={18} className="text-sky-400 group-hover:scale-110 transition-transform" />
+                          <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Translate</span>
+                        </button>
+
+                        <button 
+                          onClick={() => { setShowTextGallery(true); setIsOpen(false); }}
+                          className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-transparent hover:border-[var(--color-accent)] transition-all gap-1 group"
+                          title="Manage Text Blocks"
+                        >
+                          <Type size={18} className="text-pink-400 group-hover:scale-110 transition-transform" />
+                          <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Text Gallery</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Add Section */}{/* Add Section */}
               <div className="flex flex-col gap-1.5 mt-2">
                 <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider px-1">Add</span>
-                <div className="grid grid-cols-4 gap-1.5">
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
                   <button 
                     onClick={handleAddText}
                     className="flex flex-col items-center justify-center p-2 bg-button-bg hover:bg-button-hover text-text-main rounded-xl border border-transparent hover:border-[var(--color-accent)] transition-all gap-1 group"
@@ -727,11 +708,12 @@ export function Toolbar() {
 
             </div> {/* Close Scrollable Area */}
             </motion.div>
-          </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
-      <div className="absolute right-4 sm:right-6 bottom-4 sm:bottom-6 flex items-center justify-center z-[70]">
+      <div className="relative flex items-center justify-center z-[70]">
         <button 
           onClick={toggleOpen} 
           className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all overflow-hidden ${isOpen ? 'bg-[var(--color-accent)] text-white' : 'bg-text-main text-app-bg'}`}

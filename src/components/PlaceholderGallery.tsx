@@ -324,7 +324,7 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 bg-black/90  flex flex-col z-[100]"
+      className="fixed inset-0 bg-black/90  flex flex-col z-[150]"
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4 sm:p-6 border-b border-panel-border bg-app-bg shrink-0 flex-wrap gap-4">

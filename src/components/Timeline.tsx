@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useStore } from '../store/useStore';
-import { Play, Pause, SkipBack, Scissors, Maximize2, Minimize2, Eye, EyeOff, UploadCloud, Image as ImageIcon, Video as VideoIcon, Lock, Unlock } from 'lucide-react';
+import { Play, Pause, SkipBack, Scissors, Maximize2, Minimize2, Eye, EyeOff, ChevronDown, ChevronUp, UploadCloud, Image as ImageIcon, Video as VideoIcon, Lock, Unlock } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 export function Timeline() {
@@ -15,6 +15,7 @@ export function Timeline() {
   const updateElement = useStore((state) => state.updateElement);
   const addElement = useStore((state) => state.addElement);
   const timelineExpanded = useStore((state) => state.timelineExpanded);
+  const timelineMinimized = useStore((state) => state.timelineMinimized);
   const timelineTransparent = useStore((state) => state.timelineTransparent);
   const timelineZoom = useStore((state) => state.timelineZoom);
   const setTimelineZoom = useStore((state) => state.setTimelineZoom);
@@ -215,6 +216,13 @@ export function Timeline() {
           title="Toggle Fullscreen Timeline"
         >
           {timelineExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+        </button>
+        <button
+          onClick={() => useStore.getState().setTimelineMinimized(!useStore.getState().timelineMinimized)}
+          className={`p-2 transition-colors hover:bg-button-hover rounded-full flex-shrink-0 ${timelineMinimized ? 'text-[var(--color-accent)]' : 'text-text-muted hover:text-text-main'}`}
+          title="Minimize Timeline"
+        >
+          {timelineMinimized ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
       </div>
 

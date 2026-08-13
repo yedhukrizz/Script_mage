@@ -53,7 +53,9 @@ interface EditorState {
   scriptModalMode: 'generate' | 'paste';
   setShowScriptModal: (show: boolean, mode?: 'generate' | 'paste') => void;
   timelineExpanded: boolean;
+  timelineMinimized: boolean;
   setTimelineExpanded: (expanded: boolean) => void;
+  setTimelineMinimized: (minimized: boolean) => void;
   timelineTransparent: boolean;
   timelineTrackpadMode: boolean;
   setTimelineTrackpadMode: (mode: boolean) => void;
@@ -230,7 +232,9 @@ export const useStore = create<EditorState>((set) => ({
   scriptModalMode: 'generate',
   setShowScriptModal: (show, mode = 'generate') => set({ showScriptModal: show, scriptModalMode: mode }),
   timelineExpanded: false,
+  timelineMinimized: false,
   setTimelineExpanded: (expanded) => set({ timelineExpanded: expanded }),
+  setTimelineMinimized: (minimized) => set({ timelineMinimized: minimized }),
   timelineTransparent: false,
   timelineTrackpadMode: false,
   setTimelineTransparent: (transparent) => set({ timelineTransparent: transparent }),

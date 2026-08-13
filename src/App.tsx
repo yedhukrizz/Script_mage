@@ -256,6 +256,7 @@ export default function App() {
   const setCanvasAspectRatio = useStore((state) => state.setCanvasAspectRatio);
   const canvasAspectRatio = useStore((state) => state.canvasAspectRatio);
   const timelineExpanded = useStore((state) => state.timelineExpanded);
+  const timelineMinimized = useStore((state) => state.timelineMinimized);
   const timelineTransparent = useStore((state) => state.timelineTransparent);
 
   const aspectRatios = [
@@ -315,9 +316,6 @@ export default function App() {
           <audio ref={bgAudioRef} src={backgroundAudioUrl} loop />
         )}
         <Canvas />
-        <Toolbar />
-        <ProjectMenu />
-        <UndoRedoControls />
         {selectedElementId && (
           <div className="absolute inset-0 pointer-events-none z-50 flex flex-col justify-end items-center pb-8">
             <div className="pointer-events-auto">
@@ -326,7 +324,7 @@ export default function App() {
           </div>
         )}
         {timelineExpanded && (
-          <div className={`absolute top-16 sm:top-20 bottom-0 inset-x-2 z-40 glass-panel sm:rounded-t-[32px] rounded-t-2xl overflow-hidden border-b-0 shadow-[0_-20px_40px_var(--color-shadow)] transition-all duration-300 flex flex-col ${
+          <div className={`absolute top-16 sm:top-20 bottom-0 inset-x-2 z-40 glass-panel sm:rounded-t-[32px] rounded-t-2xl overflow-hidden border-b-0  transition-all duration-300 flex flex-col ${
             timelineTransparent ? 'opacity-40 hover:opacity-100 transition-opacity' : 'opacity-100'
           }`}>
             <div className="flex-1 min-h-0 flex flex-col">
@@ -336,9 +334,22 @@ export default function App() {
         )}
       </main>
 
+            {/* Floating Controls Anchor */}
+      <div className="relative w-full z-[100] pointer-events-none">
+        <div className="absolute bottom-4 left-4 sm:left-6 right-4 sm:right-6 flex justify-between items-end">
+          <div className="flex items-end gap-3 sm:gap-4 pointer-events-auto">
+            <ProjectMenu />
+            <UndoRedoControls />
+          </div>
+          <div className="pointer-events-auto">
+            <Toolbar />
+          </div>
+        </div>
+      </div>
+
       {/* Bottom section (Timeline + Controls) */}
-      <div className={`flex flex-col shrink-0 glass-panel sm:rounded-t-[32px] rounded-t-2xl overflow-hidden border-b-0 shadow-[0_-20px_40px_var(--color-shadow)] mx-0 transition-all duration-300 ${
-        timelineExpanded ? 'hidden' : 'max-h-[65vh] sm:max-h-[50vh]'
+      <div className={`flex flex-col shrink-0 glass-panel sm:rounded-t-[32px] rounded-t-2xl overflow-hidden border-b-0  mx-0 transition-all duration-300 ${
+        timelineExpanded ? 'hidden' : timelineMinimized ? 'max-h-[48px]' : 'max-h-[65vh] sm:max-h-[50vh]'
       } ${timelineTransparent ? 'opacity-40 hover:opacity-100 transition-opacity' : 'opacity-100'}`}>
         {/* Playback Controls & Timeline */}
         <div className="flex-1 min-h-0 flex flex-col">
@@ -360,7 +371,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60  z-[100] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/60 z-[150] flex items-center justify-center p-4"
           >
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 10 }}

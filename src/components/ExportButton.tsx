@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from 'motion/react';
 export function ExportButton({ className = "flex items-center justify-center w-10 h-10 bg-text-main text-app-bg rounded-full hover:opacity-80 transition-all disabled:opacity-50", iconSize = 18 }: { className?: string, iconSize?: number }) {
   const [isExporting, setIsExporting] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [exportLogs, setExportLogs] = useState<string[]>([]);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
   const duration = useStore((state) => state.duration);
   const setIsPlaying = useStore((state) => state.setIsPlaying);
   const setCurrentTime = useStore((state) => state.setCurrentTime);
@@ -20,15 +22,23 @@ export function ExportButton({ className = "flex items-center justify-center w-1
   const backgroundVideoUrl = useStore((state) => state.backgroundVideoUrl);
   const backgroundSpeed = useStore((state) => state.backgroundSpeed) || 1;
 
+  React.useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [exportLogs]);
+
   const handleExport = async () => {
       setIsExporting(true);
       setProgress(0);
+      setExportLogs(['> Initializing export pipeline...']);
       setIsPlaying(false);
       setCurrentTime(0);
 
       // Wait a tick for canvas to reset
       await new Promise(resolve => setTimeout(resolve, 100));
 
+      setExportLogs(prev => [...prev, '> Targeting render canvas for frame extraction...']);
       const renderCanvas = document.getElementById('render-canvas');
       if (!renderCanvas) {
         setIsExporting(false);
@@ -56,6 +66,7 @@ export function ExportButton({ className = "flex items-center justify-center w-1
       const hiddenCanvas = document.createElement('canvas');
       hiddenCanvas.width = targetWidth;
       hiddenCanvas.height = targetHeight;
+      setExportLogs(prev => [...prev, `> Setting up hidden canvas context (${targetWidth}x${targetHeight})...`]);
       const ctx = hiddenCanvas.getContext('2d', { willReadFrequently: true });
 
       if (!ctx) {
@@ -179,7 +190,8 @@ export function ExportButton({ className = "flex items-center justify-center w-1
 
       if (fileHandle) {
         writableStream = await fileHandle.createWritable();
-        muxer = new Muxer({
+        setExportLogs(prev => [...prev, '> Initializing MP4 muxer...']);
+      muxer = new Muxer({
           target: new FileSystemWritableFileStreamTarget(writableStream),
           ...muxerConfig
         });
@@ -195,6 +207,7 @@ export function ExportButton({ className = "flex items-center justify-center w-1
         error: e => console.error(e),
       });
 
+      setExportLogs(prev => [...prev, '> Video encoder configured. Starting frame generation...']);
       videoEncoder.configure({
         codec: 'avc1.640032', // High profile, level 5.0
         width: targetWidth,
@@ -649,24 +662,31 @@ export function ExportButton({ className = "flex items-center justify-center w-1
         frame.close();
 
         setProgress(i / totalFrames);
+        if (i % 30 === 0) {
+          setExportLogs(prev => [...prev, `> Rendered frame ${i} of ${totalFrames}`]);
+        }
         if (i % 5 === 0) {
           await new Promise(r => setTimeout(r, 0)); // yield
         }
       }
 
+      setExportLogs(prev => [...prev, '> Flushing remaining video frames...']);
       await videoEncoder.flush();
       if (audioEncoder) {
         audioEncoder.close();
       }
       videoEncoder.close();
+      setExportLogs(prev => [...prev, '> Finalizing MP4 container...']);
       muxer.finalize();
       
       if (writableStream) {
         await writableStream.close();
       } else {
         const buffer = (muxer.target as ArrayBufferTarget).buffer;
-        const blob = new Blob([buffer], { type: 'video/mp4' });
-        const url = URL.createObjectURL(blob);
+        setExportLogs(prev => [...prev, '> Creating video blob...']);
+      const blob = new Blob([buffer], { type: 'video/mp4' });
+        setExportLogs(prev => [...prev, '> Export complete. Triggering download...']);
+      const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
@@ -710,7 +730,7 @@ export function ExportButton({ className = "flex items-center justify-center w-1
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="glass-panel-heavy text-text-main w-full max-w-sm rounded-[32px] flex flex-col p-8 items-center text-center pointer-events-auto"
+              className="glass-panel-heavy text-text-main w-full max-w-md rounded-[32px] flex flex-col p-6 sm:p-8 items-center text-center pointer-events-auto"
             >
               <div className="w-16 h-16 rounded-2xl bg-[var(--color-accent)]/20 border border-[var(--color-accent)]/30 flex items-center justify-center text-[var(--color-accent)] shadow-inner mb-6">
                 <Film size={32} className="animate-pulse" />
@@ -718,13 +738,24 @@ export function ExportButton({ className = "flex items-center justify-center w-1
               <h3 className="text-xl font-bold mb-2">Exporting Video</h3>
               <p className="text-sm text-text-muted mb-6">Please wait while your video is being rendered. This might take a minute.</p>
               
-              <div className="w-full bg-[var(--theme-input-bg)] rounded-full h-3 mb-2 overflow-hidden border border-panel-border">
+                            <div className="w-full bg-[var(--theme-input-bg)] rounded-full h-3 mb-2 overflow-hidden border border-panel-border">
                 <div 
                   className="bg-[var(--color-accent)] h-full transition-all duration-300 ease-out rounded-full"
                   style={{ width: `${Math.round(progress * 100)}%` }}
                 />
               </div>
-              <span className="text-sm font-semibold">{Math.round(progress * 100)}%</span>
+              <span className="text-sm font-semibold mb-4">{Math.round(progress * 100)}%</span>
+              
+              <div 
+                ref={scrollRef}
+                className="w-full h-32 bg-black/60 rounded-xl p-3 overflow-y-auto text-left flex flex-col gap-1 border border-panel-border/30 custom-scrollbar mt-2"
+              >
+                {exportLogs.map((log, i) => (
+                  <span key={i} className="text-[10px] font-mono text-emerald-400 opacity-90 break-words leading-tight">
+                    {log}
+                  </span>
+                ))}
+              </div>
             </motion.div>
           </motion.div>
         )}

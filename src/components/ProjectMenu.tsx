@@ -93,7 +93,7 @@ export function ProjectMenu() {
   };
 
   return (
-    <div className="absolute left-4 sm:left-6 bottom-4 sm:bottom-6 flex flex-col-reverse items-start gap-3 z-50" ref={ref}>
+    <div className="relative flex flex-col-reverse items-start gap-3 z-50" ref={ref}>
       <button 
         onClick={() => setIsOpen(!isOpen)} 
         className={`w-12 h-12 sm:w-14 sm:h-14 bg-button-bg text-text-main border border-panel-border rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all z-10 ${isOpen ? 'bg-[var(--color-accent)] border-[var(--color-accent)] text-white' : 'hover:bg-button-hover'}`}

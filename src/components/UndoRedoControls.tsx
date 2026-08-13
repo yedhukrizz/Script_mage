@@ -32,7 +32,7 @@ export function UndoRedoControls() {
 
   return (
     <>
-      <div className="absolute left-[4.5rem] sm:left-24 bottom-4 sm:bottom-6 flex gap-2 z-50">
+      <div className="relative flex gap-2 z-50">
         <button 
           onClick={undo}
           disabled={past.length === 0}

@@ -87,6 +87,7 @@ interface EditorState {
   };
   updateDefaults: (type: 'text' | 'image' | 'shape' | 'placeholder', updates: any) => void;
   applyGlobalFont: (fontFamily: string) => void;
+  applyGlobalTextEffect: (effect: string) => void;
   applyDefaultsToProject: () => void;
   scaleTimeline: (factor: number) => void;
   showSettings: boolean;
@@ -311,8 +312,14 @@ export const useStore = create<EditorState>((set) => ({
     }
   })),
   applyGlobalFont: (fontFamily) => set((state) => ({
-    defaults: { ...state.defaults, text: { ...state.defaults.text, fontFamily } },
-    elements: state.elements.map(el => el.type === 'text' ? { ...el, fontFamily } : el)
+    elements: state.elements.map((el) =>
+      el.type === 'text' ? { ...el, fontFamily } : el
+    ),
+  })),
+  applyGlobalTextEffect: (effect) => set((state) => ({
+    elements: state.elements.map((el) =>
+      el.type === 'text' ? { ...el, textEffect: effect } : el
+    ),
   })),
   applyDefaultsToProject: () => set((state) => ({
     elements: state.elements.map(el => {

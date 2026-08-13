@@ -224,14 +224,14 @@ Rules:
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-[150] p-2 sm:p-4 md:p-6"
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 sm:p-6"
     >
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="glass-panel-heavy text-text-main w-full max-w-5xl rounded-[32px] sm:rounded-[40px] flex flex-col my-auto max-h-[90vh] overflow-hidden pointer-events-auto relative"
+        className="glass-panel-heavy text-text-main w-full max-w-5xl rounded-[24px] sm:rounded-[40px] flex flex-col my-auto max-h-[90vh] overflow-hidden pointer-events-auto relative"
       >
         
         {/* Modal Header */}

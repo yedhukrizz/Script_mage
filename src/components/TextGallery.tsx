@@ -41,6 +41,7 @@ export function TextGallery({ onClose }: TextGalleryProps) {
   const [bulkFont, setBulkFont] = useState<string>('');
   const [bulkColor, setBulkColor] = useState<string>('');
   const [bulkEffect, setBulkEffect] = useState<string>('');
+  const [showBulkEdit, setShowBulkEdit] = useState<boolean>(false);
 
   const textElements = useMemo(() => {
     return elements.filter(el => el.type === 'text').sort((a, b) => a.startTime - b.startTime);
@@ -68,10 +69,19 @@ export function TextGallery({ onClose }: TextGalleryProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/80  z-[150] flex flex-col"
+      className="fixed inset-0 bg-black/60 z-[150] flex items-center justify-center p-4 sm:p-6"
+      onClick={onClose}
     >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        transition={{ duration: 0.2 }}
+        onClick={(e) => e.stopPropagation()}
+        className="glass-panel w-full max-w-5xl max-h-[85vh] flex flex-col rounded-[24px] overflow-hidden relative shadow-2xl"
+      >
       {/* Header */}
-      <div className="shrink-0 border-b border-panel-border bg-app-bg px-6 py-4 flex items-center justify-between z-20">
+      <div className="shrink-0 border-b border-panel-border bg-panel-bg px-6 py-4 flex items-center justify-between z-20">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)]/10 flex items-center justify-center">
             <Type className="text-[var(--color-accent)]" size={20} />
@@ -81,18 +91,29 @@ export function TextGallery({ onClose }: TextGalleryProps) {
             <p className="text-xs text-text-muted mt-0.5">Manage and bulk-edit all text elements</p>
           </div>
         </div>
-        <button 
-          onClick={onClose}
-          className="p-2 bg-button-bg hover:bg-button-hover text-text-muted hover:text-text-main rounded-xl transition-colors"
-        >
-          <X size={20} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowBulkEdit(!showBulkEdit)}
+            className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all border ${showBulkEdit ? 'bg-[var(--color-accent)] text-white border-transparent' : 'bg-button-bg text-text-muted hover:text-text-main border-panel-border hover:bg-button-hover'}`}
+          >
+            Bulk Edit
+          </button>
+          <button 
+            onClick={onClose}
+            className="p-2 bg-button-bg hover:bg-button-hover text-text-muted hover:text-text-main rounded-xl transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
       </div>
 
       {/* Bulk Edit Panel */}
-      <div className="shrink-0 border-b border-panel-border bg-gradient-to-b from-[#18181b] to-black px-6 py-6 flex flex-col items-center z-20 shadow-2xl relative overflow-hidden">
+      {/* List */}
+      <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+        {showBulkEdit && (
+        <div className="border border-panel-border bg-button-bg/30 px-6 py-6 flex flex-col items-center z-20 relative rounded-2xl mb-6 shadow-inner">
         {/* Subtle background glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-transparent pointer-events-none rounded-full" />
+        
         
         <div className="flex items-center justify-center gap-2 text-xs font-bold text-text-muted tracking-[0.2em] uppercase mb-5">
           <BoxSelect size={14} className="text-[var(--color-accent)]" />
@@ -157,9 +178,9 @@ export function TextGallery({ onClose }: TextGalleryProps) {
           </div>
         </div>
       </div>
+      )}
 
-      {/* List */}
-      <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+      
         {textElements.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-text-muted">
             <Type size={48} className="mb-4 opacity-50" />
@@ -235,7 +256,8 @@ export function TextGallery({ onClose }: TextGalleryProps) {
             ))}
           </div>
         )}
-      </div>
+            </div>
+      </motion.div>
     </motion.div>
   );
 }

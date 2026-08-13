@@ -341,7 +341,7 @@ export default function App() {
             <ProjectMenu />
             <UndoRedoControls />
           </div>
-          <div className="pointer-events-auto">
+          <div className="pointer-events-auto relative">
             <Toolbar />
           </div>
         </div>

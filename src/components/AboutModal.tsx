@@ -13,14 +13,14 @@ export function AboutModal({ onClose }: AboutModalProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-[150] p-2 sm:p-4 md:p-6"
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 sm:p-6"
     >
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="glass-panel-heavy text-text-main w-full max-h-[90vh] max-w-2xl rounded-[32px] sm:rounded-[40px] flex flex-col pointer-events-auto relative overflow-hidden"
+        className="glass-panel-heavy text-text-main w-full max-h-[90vh] max-w-2xl rounded-[24px] sm:rounded-[40px] flex flex-col pointer-events-auto relative overflow-hidden"
       >
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-panel-border shrink-0 z-10 glass-panel border-x-0 border-t-0 rounded-none">
           <div className="font-semibold text-lg tracking-tight shrink-0 flex items-center gap-3 text-text-main">

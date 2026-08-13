@@ -93,7 +93,7 @@ export function ProjectMenu() {
   };
 
   return (
-    <div className="relative flex flex-col-reverse items-start gap-3 z-50" ref={ref}>
+    <div className="relative flex items-center justify-center z-50" ref={ref}>
       <button 
         onClick={() => setIsOpen(!isOpen)} 
         className={`w-12 h-12 sm:w-14 sm:h-14 bg-button-bg text-text-main border border-panel-border rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all z-10 ${isOpen ? 'bg-[var(--color-accent)] border-[var(--color-accent)] text-white' : 'hover:bg-button-hover'}`}
@@ -109,44 +109,44 @@ export function ProjectMenu() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ duration: 0.2 }}
-            className="glass-panel p-2 rounded-[24px] shadow-2xl mb-2 max-h-[50vh] sm:max-h-[60vh] overflow-y-auto custom-scrollbar max-w-[calc(100vw-2rem)]"
+            className="absolute bottom-[100%] left-0 mb-4 z-[100] w-[200px] glass-panel p-2 rounded-[24px] shadow-2xl max-h-[50vh] sm:max-h-[60vh] overflow-y-auto custom-scrollbar origin-bottom-left"
           >
-          <div className="grid grid-cols-2 gap-1 w-full relative group/tools">
+          <div className="flex flex-col gap-1.5 w-full relative group/tools">
             <button 
               onClick={handleBackToProjects} 
-              className="w-10 h-10 sm:w-12 sm:h-12 bg-button-bg text-text-main rounded-xl flex justify-center items-center hover:bg-button-hover hover:text-text-main transition-colors text-xs font-semibold" 
-              title="Back to Projects"
+              className="w-full h-10 sm:h-12 px-3 bg-button-bg text-text-main rounded-xl flex items-center gap-3 hover:bg-button-hover hover:text-text-main transition-colors text-xs font-semibold" 
             >
-              <LayoutGrid size={20} />
+              <LayoutGrid size={18} />
+              <span>Projects</span>
             </button>
             <button 
               onClick={handleSaveToLocalStorage} 
-              className="w-10 h-10 sm:w-12 sm:h-12 bg-button-bg text-text-main rounded-xl flex justify-center items-center hover:bg-button-hover hover:text-text-main transition-colors text-xs font-semibold" 
-              title="Save Project"
+              className="w-full h-10 sm:h-12 px-3 bg-button-bg text-text-main rounded-xl flex items-center gap-3 hover:bg-button-hover hover:text-text-main transition-colors text-xs font-semibold" 
             >
-              <Save size={20} />
+              <Save size={18} />
+              <span>Save Project</span>
             </button>
 
-            <label className="w-10 h-10 sm:w-12 sm:h-12 bg-button-bg text-text-main rounded-xl flex justify-center items-center hover:bg-button-hover hover:text-text-main transition-colors cursor-pointer" title="Import JSON">
-               <Upload size={20} />
+            <label className="w-full h-10 sm:h-12 px-3 bg-button-bg text-text-main rounded-xl flex items-center gap-3 hover:bg-button-hover hover:text-text-main transition-colors cursor-pointer text-xs font-semibold m-0">
+               <Upload size={18} />
+               <span>Import JSON</span>
                <input type="file" accept=".json" className="hidden" onChange={handleImportJSON} />
             </label>
             <button 
               onClick={handleExportJSON} 
-              className="w-10 h-10 sm:w-12 sm:h-12 bg-button-bg text-text-main rounded-xl flex justify-center items-center hover:bg-button-hover hover:text-text-main transition-colors text-xs font-semibold" 
-              title="Export JSON"
+              className="w-full h-10 sm:h-12 px-3 bg-button-bg text-text-main rounded-xl flex items-center gap-3 hover:bg-button-hover hover:text-text-main transition-colors text-xs font-semibold" 
             >
-              <Download size={20} />
+              <Download size={18} />
+              <span>Export JSON</span>
             </button>
             <button 
               onClick={() => {
                 setShowAboutModal(true);
                 setIsOpen(false);
               }} 
-              className="col-span-2 w-full h-10 sm:h-12 bg-button-bg text-text-main rounded-xl flex justify-center items-center gap-2 hover:bg-button-hover hover:text-text-main transition-colors text-xs font-semibold uppercase tracking-wider" 
-              title="About Script Mage"
+              className="w-full h-10 sm:h-12 px-3 bg-button-bg text-text-main rounded-xl flex items-center justify-center gap-2 hover:bg-button-hover hover:text-text-main transition-colors text-xs font-semibold uppercase tracking-wider mt-1 border border-panel-border/50" 
             >
-              <Info size={16} /> About
+              <Info size={16} /> <span>About Script Mage</span>
             </button>
           </div>
           </motion.div>

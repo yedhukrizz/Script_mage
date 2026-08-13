@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
-import { Trash2, Mic, Globe, Move, Type, Image as ImageIcon, Activity, Clock, SlidersHorizontal, Settings2, Play, X, Sparkles } from 'lucide-react';
+import { Trash2, Mic, Globe, Move, Type, Palette, Image as ImageIcon, Activity, Clock, SlidersHorizontal, Settings2, Play, X, Sparkles } from 'lucide-react';
 import { TTSModal } from './TTSModal';
 import { motion, AnimatePresence } from 'motion/react';
 import { CustomSelect } from './CustomSelect';
@@ -81,7 +81,7 @@ export function PropertiesPanel() {
   const duration = useStore((state) => state.duration);
   const saveHistory = useStore((state) => state.saveHistory);
   
-  const [activeTab, setActiveTab] = useState<'transform' | 'appearance' | 'media' | 'animation' | 'time' | 'tts' | null>(null);
+  const [activeTab, setActiveTab] = useState<'transform' | 'text' | 'appearance' | 'media' | 'animation' | 'time' | 'tts' | null>(null);
   const [showTTSModal, setShowTTSModal] = useState(false);
   const [translateLang, setTranslateLang] = useState('es');
   const [isTranslating, setIsTranslating] = useState(false);
@@ -152,11 +152,13 @@ export function PropertiesPanel() {
   };
 
   const hasAppearance = selectedElement.type === 'text' || selectedElement.type === 'shape';
+  const hasText = selectedElement.type === 'text';
   const hasMedia = selectedElement.type === 'image' || selectedElement.type === 'video' || selectedElement.type === 'audio' || selectedElement.isPlaceholder;
   const hasTTS = selectedElement.type === 'text';
 
   // Deselect tab if invalid
   if (activeTab === 'appearance' && !hasAppearance) setActiveTab(null);
+  if (activeTab === 'text' && !hasText) setActiveTab(null);
   if (activeTab === 'media' && !hasMedia) setActiveTab(null);
   if (activeTab === 'tts' && !hasTTS) setActiveTab(null);
 
@@ -227,19 +229,23 @@ export function PropertiesPanel() {
               </>
             )}
 
+            {activeTab === 'text' && hasText && (
+              <>
+                <div className="flex flex-col gap-2 mb-4">
+                  <span className="text-xs text-text-muted font-medium px-1">Text Content</span>
+                  <textarea 
+                    value={selectedElement.content || ''} 
+                    onChange={(e) => handleChange('content', e.target.value)}
+                    className="w-full bg-button-bg border border-panel-border hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] rounded-xl px-3 py-2 text-sm text-text-main resize-none outline-none transition-colors min-h-[120px] custom-scrollbar"
+                    placeholder="Enter text..."
+                  />
+                </div>
+              </>
+            )}
+
             {activeTab === 'appearance' && hasAppearance && (
               <>
-                {selectedElement.type === 'text' && (
-                  <div className="flex flex-col gap-2 mb-4">
-                    <span className="text-xs text-text-muted font-medium px-1">Text Content</span>
-                    <textarea 
-                      value={selectedElement.content || ''} 
-                      onChange={(e) => handleChange('content', e.target.value)}
-                      className="w-full bg-button-bg border border-panel-border hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] rounded-xl px-3 py-2 text-sm text-text-main resize-none outline-none transition-colors min-h-[80px]"
-                      placeholder="Enter text..."
-                    />
-                  </div>
-                )}
+                
                 
                 <div className="flex flex-col gap-2 mb-4">
                   <span className="text-xs text-text-muted font-medium px-1">Color</span>
@@ -413,7 +419,8 @@ export function PropertiesPanel() {
         className="flex items-center gap-1 p-1.5 glass-panel rounded-[24px] pointer-events-auto"
       >
         <IconButton icon={SlidersHorizontal} onClick={() => setActiveTab(activeTab === 'transform' ? null : 'transform')} active={activeTab === 'transform'} />
-        {hasAppearance && <IconButton icon={Type} onClick={() => setActiveTab(activeTab === 'appearance' ? null : 'appearance')} active={activeTab === 'appearance'} />}
+        {hasText && <IconButton icon={Type} onClick={() => setActiveTab(activeTab === 'text' ? null : 'text')} active={activeTab === 'text'} />}
+        {hasAppearance && <IconButton icon={Palette} onClick={() => setActiveTab(activeTab === 'appearance' ? null : 'appearance')} active={activeTab === 'appearance'} />}
         {hasMedia && <IconButton icon={ImageIcon} onClick={() => setActiveTab(activeTab === 'media' ? null : 'media')} active={activeTab === 'media'} />}
         <IconButton icon={Activity} onClick={() => setActiveTab(activeTab === 'animation' ? null : 'animation')} active={activeTab === 'animation'} />
         <IconButton icon={Clock} onClick={() => setActiveTab(activeTab === 'time' ? null : 'time')} active={activeTab === 'time'} />

@@ -324,10 +324,19 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 bg-black/90  flex flex-col z-[150]"
+      className="fixed inset-0 bg-black/60 z-[150] flex items-center justify-center p-4 sm:p-6"
+      onClick={onClose}
     >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        transition={{ duration: 0.2 }}
+        onClick={(e) => e.stopPropagation()}
+        className="glass-panel w-full max-w-5xl max-h-[85vh] flex flex-col rounded-[24px] overflow-hidden relative shadow-2xl"
+      >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 sm:p-6 border-b border-panel-border bg-app-bg shrink-0 flex-wrap gap-4">
+      <div className="flex items-center justify-between p-4 sm:p-6 border-b border-panel-border bg-panel-bg shrink-0 flex-wrap gap-4">
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)]/20 flex items-center justify-center text-[var(--color-accent)] shrink-0">
             <ImageIcon size={20} />
@@ -640,7 +649,8 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
             })}
           </div>
         )}
-      </div>
+            </div>
+      </motion.div>
     </motion.div>
   );
 }

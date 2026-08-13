@@ -125,10 +125,10 @@ export function TextGallery({ onClose }: TextGalleryProps) {
           <div className="flex-1 min-w-[200px] px-2 py-1 flex flex-col justify-center">
             <span className="text-[10px] text-text-muted opacity-80 font-bold uppercase tracking-wider mb-1">Target Font</span>
             <CustomSelect 
-              value={bulkFont || 'none'}
-              onChange={(val) => setBulkFont(val === 'none' ? '' : val)}
+              value={bulkFont || 'unchanged'}
+              onChange={(val) => setBulkFont(val === 'unchanged' ? '' : val)}
               options={[
-                { value: 'none', label: '— Unchanged —' },
+                { value: 'unchanged', label: '— Unchanged —' },
                 ...FONTS.map(f => ({ value: f, label: f }))
               ]}
             />
@@ -139,10 +139,10 @@ export function TextGallery({ onClose }: TextGalleryProps) {
           <div className="flex-1 min-w-[200px] px-2 py-1 flex flex-col justify-center">
             <span className="text-[10px] text-text-muted opacity-80 font-bold uppercase tracking-wider mb-1">Target Effect</span>
             <CustomSelect 
-              value={bulkEffect || 'none'}
-              onChange={(val) => setBulkEffect(val === 'none' ? '' : val)}
+              value={bulkEffect || 'unchanged'}
+              onChange={(val) => setBulkEffect(val === 'unchanged' ? '' : val)}
               options={[
-                { value: 'none', label: '— Unchanged —' },
+                { value: 'unchanged', label: '— Unchanged —' },
                 ...EFFECTS
               ]}
             />

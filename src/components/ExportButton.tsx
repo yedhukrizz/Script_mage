@@ -21,6 +21,11 @@ export function ExportButton({ className = "flex items-center justify-center w-1
   const backgroundGradient = useStore((state) => state.backgroundGradient);
   const backgroundVideoUrl = useStore((state) => state.backgroundVideoUrl);
   const backgroundSpeed = useStore((state) => state.backgroundSpeed) || 1;
+  const gridOverlay = useStore((state) => state.gridOverlay);
+  const gridColor = useStore((state) => state.gridColor);
+  const postProcessingFx = useStore((state) => state.postProcessingFx);
+  const keylightType = useStore((state) => state.keylightType);
+  const keylightColor = useStore((state) => state.keylightColor);
 
   React.useEffect(() => {
     if (scrollRef.current) {
@@ -491,8 +496,9 @@ export function ExportButton({ className = "flex items-center justify-center w-1
             ctx.fillRect(0, 0, element.width, element.height);
           } else if (element.type === 'text') {
             let renderedText = element.content;
-            const isTypewriter = element.animationIn === 'typewriter' || element.textEffect === 'write-on';
-            const isWordEffect = ['fly-words', 'fade-words', 'zoom-words'].includes(element.textEffect || '');
+            const effects = [element.textEffect, element.textEffect2, element.textEffect3].filter(Boolean) as string[];
+            const isTypewriter = element.animationIn === 'typewriter' || effects.includes('write-on');
+            const isWordEffect = effects.some(e => ['fly-words', 'fade-words', 'zoom-words'].includes(e));
             const textEffectDuration = Math.min(element.endTime - element.startTime, Math.max(1000, element.content.length * 50));
 
             if (isTypewriter && timeSinceStart < textEffectDuration) {
@@ -507,12 +513,12 @@ export function ExportButton({ className = "flex items-center justify-center w-1
             let dx = 0;
             let dy = 0;
             
-            if (element.textEffect === 'shiver') {
+            if (effects.includes('shiver')) {
               dx = (Math.random() - 0.5) * 6;
               dy = (Math.random() - 0.5) * 6;
-            } else if (element.textEffect === 'flicker') {
+            } else if (effects.includes('flicker')) {
               if (Math.random() > 0.8) renderOpacity = renderOpacity * 0.3;
-            } else if (element.textEffect === 'glitch') {
+            } else if (effects.includes('glitch')) {
               if (Math.random() > 0.8) {
                  dx = (Math.random() - 0.5) * 15;
               }
@@ -526,10 +532,10 @@ export function ExportButton({ className = "flex items-center justify-center w-1
             ctx.fillStyle = element.color || '#ffffff';
             ctx.textBaseline = 'middle';
             
-            if (element.textEffect === 'bloom') {
+            if (effects.includes('bloom')) {
               ctx.shadowColor = element.color || '#ffffff';
               ctx.shadowBlur = 20;
-            } else if (element.textEffect === 'neon') {
+            } else if (effects.includes('neon')) {
               ctx.shadowColor = element.color || '#ffffff';
               ctx.shadowBlur = 40;
             } else {
@@ -570,7 +576,7 @@ export function ExportButton({ className = "flex items-center justify-center w-1
               if (!isWordEffect) {
                 ctx.textAlign = 'center';
                 ctx.fillText(line, element.width / 2 + dx, startY + dy);
-                if (element.textEffect === 'bloom' || element.textEffect === 'neon') {
+                if (effects.includes('bloom') || effects.includes('neon')) {
                    ctx.fillText(line, element.width / 2 + dx, startY + dy);
                 }
               } else {
@@ -603,13 +609,13 @@ export function ExportButton({ className = "flex items-center justify-center w-1
                   let wordDy = dy;
                   let scale = 1;
                   
-                  if (element.textEffect === 'fly-words') {
+                  if (effects.includes('fly-words')) {
                     wordDy += (1 - p) * 50;
                     wordRenderOp *= p;
-                  } else if (element.textEffect === 'zoom-words') {
+                  } else if (effects.includes('zoom-words')) {
                     scale = 0.2 + p * 0.8;
                     wordRenderOp *= p;
-                  } else if (element.textEffect === 'fade-words') {
+                  } else if (effects.includes('fade-words')) {
                     wordRenderOp *= p;
                   }
                   
@@ -618,7 +624,7 @@ export function ExportButton({ className = "flex items-center justify-center w-1
                   ctx.scale(scale, scale);
                   ctx.textAlign = 'center';
                   ctx.fillText(word, 0, 0);
-                  if (element.textEffect === 'bloom' || element.textEffect === 'neon') {
+                  if (effects.includes('bloom') || effects.includes('neon')) {
                      ctx.fillText(word, 0, 0);
                   }
                   ctx.restore();

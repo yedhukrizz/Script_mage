@@ -33,6 +33,10 @@ interface EditorState {
   keylightType: 'none' | 'up' | 'down';
   keylightColor: string;
   gridOverlay: 'none' | 'small' | 'large';
+  gridColor: string;
+  postProcessingFx: 'none' | 'crt' | 'vhs' | 'noise';
+  setGridColor: (color: string) => void;
+  setPostProcessingFx: (fx: 'none' | 'crt' | 'vhs' | 'noise') => void;
   setBackgroundType: (type: 'solid' | 'gradient' | 'animated-gradient' | 'video' | 'scrolling-grid' | 'scrolling-dots' | 'scrolling-lines' | 'scanning-laser' | 'scrolling-diagonal' | 'pulse-grid' | 'radar-sweep') => void;
   setBackgroundColor: (color: string) => void;
   setBackgroundGradient: (gradient: string[]) => void;
@@ -80,7 +84,7 @@ interface EditorState {
   setCustomFonts: (fonts: string[]) => void;
   setGlobalTextScale: (scale: number) => void;
   defaults: {
-    text: { animationIn: string, animationOut: string, easing: string, fontFamily?: string, textEffect?: string, fontWeight?: number },
+    text: { animationIn: string, animationOut: string, easing: string, fontFamily?: string, textEffect?: string, textEffect2?: string, textEffect3?: string, fontWeight?: number },
     image: { animationIn: string, animationOut: string, easing: string },
     shape: { animationIn: string, animationOut: string, easing: string },
     placeholder: { mediaDimness: number, animationIn: string, animationOut: string, mediaEffect: string },
@@ -196,7 +200,7 @@ export const useStore = create<EditorState>((set) => ({
   setCustomFonts: (fonts) => set({ customFonts: fonts }),
   canvasScale: 1,
   defaults: {
-    text: { animationIn: 'fade-slide-up', animationOut: 'fade-slide-up', easing: 'ease-in-out', fontFamily: 'Instrument Sans', textEffect: 'none', fontWeight: 600 },
+    text: { animationIn: 'fade-slide-up', animationOut: 'fade-slide-up', easing: 'ease-in-out', fontFamily: 'Instrument Sans', textEffect: 'none', textEffect2: 'none', textEffect3: 'none', fontWeight: 600 },
     image: { animationIn: 'fade-slide-up', animationOut: 'fade-slide-up', easing: 'ease-in-out' },
     shape: { animationIn: 'fade-slide-up', animationOut: 'fade-slide-up', easing: 'ease-in-out' },
     placeholder: { mediaDimness: 0.5, animationIn: 'fade', animationOut: 'fade', mediaEffect: 'none' },
@@ -213,6 +217,10 @@ export const useStore = create<EditorState>((set) => ({
   keylightType: 'none',
   keylightColor: '#ff0000',
   gridOverlay: 'none',
+  gridColor: '#ffffff',
+  postProcessingFx: 'none',
+  setGridColor: (color) => set({ gridColor: color }),
+  setPostProcessingFx: (fx) => set({ postProcessingFx: fx }),
   setBackgroundType: (type) => set({ backgroundType: type }),
   setBackgroundColor: (color) => set({ backgroundColor: color }),
   setBackgroundGradient: (gradient) => set({ backgroundGradient: gradient }),
@@ -318,7 +326,7 @@ export const useStore = create<EditorState>((set) => ({
   })),
   applyGlobalTextEffect: (effect) => set((state) => ({
     elements: state.elements.map((el) =>
-      el.type === 'text' ? { ...el, textEffect: effect } : el
+      el.type === 'text' ? { ...el, textEffect: effect, textEffect2: 'none', textEffect3: 'none' } : el
     ),
   })),
   applyDefaultsToProject: () => set((state) => ({
@@ -342,6 +350,8 @@ export const useStore = create<EditorState>((set) => ({
           easing: state.defaults.text.easing,
           fontFamily: state.defaults.text.fontFamily,
           textEffect: state.defaults.text.textEffect,
+          textEffect2: state.defaults.text.textEffect2,
+          textEffect3: state.defaults.text.textEffect3,
           fontWeight: state.defaults.text.fontWeight,
         };
       } else if (el.type === 'shape') {
@@ -421,6 +431,8 @@ export const useStore = create<EditorState>((set) => ({
       keylightType: s.keylightType,
       keylightColor: s.keylightColor,
       gridOverlay: s.gridOverlay,
+      gridColor: s.gridColor,
+      postProcessingFx: s.postProcessingFx,
       backgroundAudioUrl: newBgAudio,
       backgroundAudioVolume: s.backgroundAudioVolume,
       cloudflareWorkerUrl: s.cloudflareWorkerUrl,
@@ -446,6 +458,8 @@ export const useStore = create<EditorState>((set) => ({
         keylightType: data.keylightType || 'none',
         keylightColor: data.keylightColor || '#ff0000',
         gridOverlay: data.gridOverlay || 'none',
+        gridColor: data.gridColor || '#ffffff',
+        postProcessingFx: data.postProcessingFx || 'none',
         backgroundAudioUrl: data.backgroundAudioUrl || null,
         backgroundAudioVolume: data.backgroundAudioVolume ?? 0.5,
         cloudflareWorkerUrl: data.cloudflareWorkerUrl || '',

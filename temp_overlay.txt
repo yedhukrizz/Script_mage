@@ -1,0 +1,31 @@
+          {activeSubMenu === 'overlay' && (
+            <div className="flex flex-col gap-3 p-2">
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1">
+                <label className="text-[10px] text-text-muted uppercase font-semibold">Grid Overlay</label>
+                <select 
+                  value={gridOverlay} 
+                  onChange={(e) => setGridOverlay(e.target.value as any)}
+                  className="bg-button-bg border border-panel-border rounded-lg px-2 py-1.5 text-xs text-text-main outline-none focus:border-[var(--color-accent)] cursor-pointer"
+                >
+                  <option value="none">None</option>
+                  <option value="small">Small Grid</option>
+                  <option value="large">Large Grid</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] text-text-muted uppercase font-semibold">Keylight Direction</label>
+                <select 
+                  value={keylightType} 
+                  onChange={(e) => setKeylightType(e.target.value as any)}
+                  className="bg-button-bg border border-panel-border rounded-lg px-2 py-1.5 text-xs text-text-main outline-none focus:border-[var(--color-accent)] cursor-pointer"
+                >
+                  <option value="none">None</option>
+                  <option value="up">Bottom-Up</option>
+                  <option value="down">Top-Down</option>
+                </select>
+              </div>
+              </div>
+            </div>
+          )}

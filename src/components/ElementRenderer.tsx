@@ -174,13 +174,14 @@ export const ElementRenderer: React.FC<{ element: EditorElement }> = ({ element 
   const renderContent = () => {
     switch (element.type) {
       case 'text':
-        const textEffectClass = element.textEffect && element.textEffect !== 'none' ? `effect-${element.textEffect}` : '';
+        const effects = [element.textEffect, element.textEffect2, element.textEffect3].filter(Boolean) as string[];
+        const textEffectClass = effects.filter(e => e !== 'none').map(e => `effect-${e}`).join(' ');
         const fontFamily = element.fontFamily || 'Instrument Sans';
         
         let renderedText: React.ReactNode = element.content;
         
-        const isTypewriter = element.animationIn === 'typewriter' || element.textEffect === 'write-on';
-        const isWordEffect = ['fly-words', 'fade-words', 'zoom-words'].includes(element.textEffect || '');
+        const isTypewriter = element.animationIn === 'typewriter' || effects.includes('write-on');
+        const isWordEffect = effects.some(e => ['fly-words', 'fade-words', 'zoom-words'].includes(e));
         
         const textEffectDuration = Math.min(element.endTime - element.startTime, Math.max(1000, element.content.length * 50));
         
@@ -211,12 +212,12 @@ export const ElementRenderer: React.FC<{ element: EditorElement }> = ({ element 
               
               let style: React.CSSProperties = { display: 'inline-block', whiteSpace: 'pre-wrap' };
               
-              if (element.textEffect === 'fly-words') {
+              if (effects.includes('fly-words')) {
                 style.transform = `translateY(${(1 - p) * 50}px)`;
                 style.opacity = p;
-              } else if (element.textEffect === 'fade-words') {
+              } else if (effects.includes('fade-words')) {
                 style.opacity = p;
-              } else if (element.textEffect === 'zoom-words') {
+              } else if (effects.includes('zoom-words')) {
                 style.transform = `scale(${0.2 + p * 0.8})`;
                 style.opacity = p;
               }

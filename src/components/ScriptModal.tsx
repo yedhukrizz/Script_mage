@@ -201,6 +201,8 @@ Rules:
           easing: defaults.easing,
           fontFamily: defaults.fontFamily || 'Instrument Sans',
           textEffect: effectStr || defaults.textEffect || 'none',
+          textEffect2: defaults.textEffect2 || 'none',
+          textEffect3: defaults.textEffect3 || 'none',
           fontWeight: defaults.fontWeight || 600,
           color,
           fontSize: size,

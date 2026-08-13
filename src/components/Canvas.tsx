@@ -2,6 +2,14 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { ElementRenderer } from './ElementRenderer';
 
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16) || 255;
+  const g = parseInt(hex.slice(3, 5), 16) || 255;
+  const b = parseInt(hex.slice(5, 7), 16) || 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export function Canvas() {
   const elements = useStore((state) => state.elements);
   const setSelectedElementId = useStore((state) => state.setSelectedElementId);
@@ -14,6 +22,8 @@ export function Canvas() {
   const keylightType = useStore((state) => state.keylightType);
   const keylightColor = useStore((state) => state.keylightColor);
   const gridOverlay = useStore((state) => state.gridOverlay);
+  const gridColor = useStore((state) => state.gridColor);
+  const postProcessingFx = useStore((state) => state.postProcessingFx);
   const containerRef = useRef<HTMLDivElement>(null);
   const scale = useStore((state) => state.canvasScale);
   const setScale = useStore((state) => state.setCanvasScale);
@@ -192,7 +202,7 @@ export function Canvas() {
         
         {gridOverlay !== 'none' && (
           <div className="absolute inset-0 z-0 pointer-events-none mix-blend-overlay opacity-30" style={{
-            backgroundImage: `linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(to right, ${hexToRgba(gridColor, 0.2)} 1px, transparent 1px), linear-gradient(to bottom, ${hexToRgba(gridColor, 0.2)} 1px, transparent 1px)`,
             backgroundSize: gridOverlay === 'large' ? '150px 150px' : '50px 50px'
           }} />
         )}
@@ -203,6 +213,20 @@ export function Canvas() {
           }} />
         )}
 
+        
+        {postProcessingFx !== 'none' && (
+          <div className="absolute inset-0 z-50 pointer-events-none mix-blend-overlay opacity-30" style={{
+            backgroundImage: postProcessingFx === 'crt' 
+              ? 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))'
+              : postProcessingFx === 'vhs'
+              ? 'repeating-linear-gradient(transparent, transparent 2px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px)'
+              : postProcessingFx === 'noise'
+              ? 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")'
+              : 'none',
+            backgroundSize: postProcessingFx === 'crt' ? '100% 4px, 6px 100%' : postProcessingFx === 'noise' ? '100px 100px' : '100% 4px'
+          }} />
+        )}
+  
         <div className="absolute inset-0 z-10 pointer-events-none">
           {normalElements.map((el) => (
             <ElementRenderer key={el.id} element={el} />

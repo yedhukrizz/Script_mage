@@ -1,15 +1,23 @@
 const fs = require('fs');
-let file = 'src/App.tsx';
-let content = fs.readFileSync(file, 'utf8');
+let app = fs.readFileSync('src/App.tsx', 'utf8');
 
-// The current layout has:
-//        <Toolbar />
-//        <ProjectMenu />
-//        <UndoRedoControls />
-// inside the file but we just replaced them inside App.tsx earlier?
-// Wait, I did:
-// app = app.replace(/\s*<Toolbar \/>\s*<ProjectMenu \/>\s*<UndoRedoControls \/>/g, '');
-// app = app.replace(/<AnimatePresence>/, '<Toolbar />\n      <ProjectMenu />\n      <UndoRedoControls />\n      <AnimatePresence>');
-//
-// So they are right above <AnimatePresence> which is AT THE END OF THE COMPONENT!
-// Let's verify where they are.
+const layoutOld = `<div className="absolute bottom-4 left-4 sm:left-6 right-4 sm:right-6 flex justify-between items-end">
+          <div className="flex items-end gap-2 pointer-events-auto">
+            <ProjectMenu />
+            <UndoRedoControls />
+          </div>
+          <div className="pointer-events-auto relative">
+            <Toolbar />
+          </div>
+        </div>`;
+
+const layoutNew = `<div className="absolute bottom-4 left-0 right-0 flex justify-center items-end pointer-events-none">
+          <div className="flex items-end gap-2 pointer-events-auto bg-panel-bg/50 backdrop-blur-md p-2 rounded-[32px] border border-panel-border/50 shadow-sm">
+            <ProjectMenu />
+            <UndoRedoControls />
+            <Toolbar />
+          </div>
+        </div>`;
+
+app = app.replace(layoutOld, layoutNew);
+fs.writeFileSync('src/App.tsx', app);

@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
-import { Download, Loader2, Film } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { CustomSelect } from './CustomSelect';
+import { Upload, Share, Download, Loader2, Film, Settings, X } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { Muxer, ArrayBufferTarget, FileSystemWritableFileStreamTarget } from 'mp4-muxer';
 import { TTS_VOICES } from '../lib/ttsVoices';
 import { motion, AnimatePresence } from 'motion/react';
 
-export function ExportButton({ className = "flex items-center justify-center w-10 h-10 bg-text-main text-app-bg rounded-full hover:opacity-80 transition-all disabled:opacity-50", iconSize = 18 }: { className?: string, iconSize?: number }) {
+export function ExportButton({ className = "flex flex-col items-center justify-center p-2 w-full h-full bg-button-bg hover:bg-button-hover text-text-main rounded-xl border float-border hover:border-[var(--color-accent)] transition-all gap-1 group", iconSize = 18, showText = true }: { className?: string, iconSize?: number, showText?: boolean }) {
+  
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [resolution, setResolution] = useState('1080p');
+  const [fps, setFps] = useState(30);
+  const cancelRef = useRef(false);
+
   const [isExporting, setIsExporting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [exportLogs, setExportLogs] = useState<string[]>([]);
@@ -14,6 +21,7 @@ export function ExportButton({ className = "flex items-center justify-center w-1
   const setIsPlaying = useStore((state) => state.setIsPlaying);
   const setCurrentTime = useStore((state) => state.setCurrentTime);
   const elements = useStore((state) => state.elements);
+  const geminiApiKey = useStore((state) => state.geminiApiKey);
   const globalTextScale = useStore((state) => state.globalTextScale) || 1;
   const canvasAspectRatio = useStore((state) => state.canvasAspectRatio);
   const backgroundType = useStore((state) => state.backgroundType);
@@ -43,26 +51,36 @@ export function ExportButton({ className = "flex items-center justify-center w-1
       // Wait a tick for canvas to reset
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      setExportLogs(prev => [...prev, '> Targeting render canvas for frame extraction...']);
+      setExportLogs(prev => [...prev, '> Targeting render canvas for frame extraction...', `> Processing ${elements.length} timeline elements...`]);
       const renderCanvas = document.getElementById('render-canvas');
       if (!renderCanvas) {
         setIsExporting(false);
         return;
       }
 
+
+      // Apply selected FPS
+
+
       // Determine target resolution based on aspect ratio
-      let targetWidth = 1080;
-      let targetHeight = 1080;
+      let baseRes = 1080;
+      if (resolution === '720p') baseRes = 720;
+      else if (resolution === '4k') baseRes = 2160;
+      else if (resolution === '8k') baseRes = 4320;
+
+      let targetWidth = baseRes;
+      let targetHeight = baseRes;
       const [wRatio, hRatio] = canvasAspectRatio.split('/').map(Number);
       if (wRatio && hRatio) {
         if (wRatio > hRatio) {
-          targetHeight = 1080;
-          targetWidth = Math.round(1080 * (wRatio / hRatio));
+          targetHeight = baseRes;
+          targetWidth = Math.round(baseRes * (wRatio / hRatio));
         } else {
-          targetWidth = 1080;
-          targetHeight = Math.round(1080 * (hRatio / wRatio));
+          targetWidth = baseRes;
+          targetHeight = Math.round(baseRes * (hRatio / wRatio));
         }
       }
+
 
       // Ensure even dimensions for video codecs
       targetWidth = Math.round(targetWidth / 2) * 2;
@@ -71,7 +89,7 @@ export function ExportButton({ className = "flex items-center justify-center w-1
       const hiddenCanvas = document.createElement('canvas');
       hiddenCanvas.width = targetWidth;
       hiddenCanvas.height = targetHeight;
-      setExportLogs(prev => [...prev, `> Setting up hidden canvas context (${targetWidth}x${targetHeight})...`]);
+      setExportLogs(prev => [...prev, `> Setting up hidden canvas context...`, `> Resolution: ${targetWidth}x${targetHeight}`, `> Framerate: ${fps} fps`]);
       const ctx = hiddenCanvas.getContext('2d', { willReadFrequently: true });
 
       if (!ctx) {
@@ -79,8 +97,12 @@ export function ExportButton({ className = "flex items-center justify-center w-1
         return;
       }
 
-      const fps = 30;
-      const totalFrames = Math.ceil((duration / 1000) * fps);
+
+      
+      const maxElementTime = elements.length > 0 ? Math.max(...elements.map(el => el.endTime)) : 0;
+      const exportDurationMs = maxElementTime > 0 ? maxElementTime : duration;
+      const totalFrames = Math.ceil((exportDurationMs / 1000) * fps);
+
       const frameDuration = 1000 / fps;
 
       let muxer = null;
@@ -127,6 +149,21 @@ export function ExportButton({ className = "flex items-center justify-center w-1
           }
         }
 
+        
+        if (postProcessingFx === 'noise') {
+           const noiseUrl = 'data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E';
+           try {
+              const img = new Image();
+              const imgPromise = new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+              });
+              img.src = noiseUrl;
+              await imgPromise;
+              imageCache['noise_svg_fx'] = img;
+           } catch(e) {}
+        }
+
         // Fetch and decode TTS Audio
         const audioBuffers: { el?: any, isBg?: boolean, buffer: AudioBuffer }[] = [];
       for (const el of elements) {
@@ -144,11 +181,18 @@ export function ExportButton({ className = "flex items-center justify-center w-1
                lang = el.ttsVoice.split('-')[0] || 'en';
             }
             
-            const res = await fetch(`/api/tts?text=${encodeURIComponent(el.content)}&lang=${lang}${voiceParam}`);
+            const res = await fetch(`${voiceConfig?.category === 'Gemini' ? '/api/gemini-tts' : '/api/tts'}?text=${encodeURIComponent(el.content)}&lang=${lang}${voiceParam}${(useStore.getState().geminiApiKey ? '&apiKey=' + encodeURIComponent(useStore.getState().geminiApiKey) : '')}`);
             if (res.ok) {
               const arrayBuffer = await res.arrayBuffer();
               const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
               audioBuffers.push({ el, buffer: audioBuffer });
+            } else {
+              const err = await res.text();
+              if (err.includes('API key not valid') || err.includes('API_KEY_INVALID')) {
+                 useStore.getState().addToast('Invalid Gemini API Key! Please check your Settings.', 'error');
+                 throw new Error('Invalid Gemini API Key! Please check your Settings.');
+              }
+              throw new Error(err);
             }
           } catch (e) {
             console.error("Failed to load TTS for element", el.id, e);
@@ -207,17 +251,29 @@ export function ExportButton({ className = "flex items-center justify-center w-1
         });
       }
 
+      let encoderError = null;
       videoEncoder = new VideoEncoder({
         output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
-        error: e => console.error(e),
+        error: e => {
+          console.error("VideoEncoder error:", e);
+          encoderError = e;
+        }
       });
+
+      let avcLevel = '32'; // 5.0
+      const pixels = targetWidth * targetHeight;
+      if (pixels > 8912896) {
+        avcLevel = '3E'; // 6.2
+      } else if (pixels > 5652480) {
+        avcLevel = '34'; // 5.2
+      }
 
       setExportLogs(prev => [...prev, '> Video encoder configured. Starting frame generation...']);
       videoEncoder.configure({
-        codec: 'avc1.640032', // High profile, level 5.0
+        codec: `avc1.6400${avcLevel}`,
         width: targetWidth,
         height: targetHeight,
-        bitrate: 8_000_000, 
+        bitrate: pixels > 5000000 ? 30_000_000 : 8_000_000, 
         framerate: fps,
       });
 
@@ -234,7 +290,7 @@ export function ExportButton({ className = "flex items-center justify-center w-1
         });
 
         // Render entire audio timeline
-        const offlineCtx = new OfflineAudioContext(2, Math.max(1, Math.ceil(44100 * (duration / 1000))), 44100);
+        const offlineCtx = new OfflineAudioContext(2, Math.max(1, Math.ceil(44100 * (exportDurationMs / 1000))), 44100);
         for (const { el, isBg, buffer } of audioBuffers) {
           const source = offlineCtx.createBufferSource();
           source.buffer = buffer;
@@ -268,7 +324,7 @@ export function ExportButton({ className = "flex items-center justify-center w-1
           gainNode.connect(offlineCtx.destination);
           
           if (isBg) {
-            source.start(0, 0, duration / 1000);
+            source.start(0, 0, exportDurationMs / 1000);
           } else if (el) {
             const startSeconds = Math.max(0, el.startTime / 1000);
             const durationSeconds = Math.max(0, (el.endTime - el.startTime) / 1000);
@@ -311,7 +367,13 @@ export function ExportButton({ className = "flex items-center justify-center w-1
         'ease-in-out': t => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t
       };
 
-      const scale = 1;
+      
+      let logicalWidth = 1080;
+      if (wRatio && hRatio && wRatio > hRatio) {
+         logicalWidth = Math.round(1080 * (wRatio / hRatio));
+      }
+      const scale = targetWidth / logicalWidth;
+
       const offsetX = 0;
       const offsetY = 0;
 
@@ -353,8 +415,8 @@ export function ExportButton({ className = "flex items-center justify-center w-1
           ctx.strokeStyle = '#333333';
           ctx.lineWidth = backgroundType === 'scrolling-lines' ? 2 : 1;
           
-          const size = backgroundType === 'scrolling-dots' ? 30 : 50;
-          let offsetY = (timeSec * backgroundSpeed * 50 / 15) % size;
+          const size = (backgroundType === 'scrolling-dots' ? 30 : 50) * scale;
+          let offsetY = (timeSec * backgroundSpeed * 50 * scale / 15) % size;
           let offsetX = backgroundType === 'scrolling-diagonal' ? offsetY : 0;
           
           if (backgroundType === 'scrolling-lines') {
@@ -386,7 +448,7 @@ export function ExportButton({ className = "flex items-center justify-center w-1
           const opacity = 0.2 + 0.4 * (0.5 + 0.5 * Math.sin(timeSec * backgroundSpeed * Math.PI * 2 / 4));
           ctx.globalAlpha = opacity;
           ctx.beginPath();
-          const size = 40;
+          const size = 40 * scale;
           for (let x = 0; x <= targetWidth; x += size) {
              ctx.moveTo(x, 0); ctx.lineTo(x, targetHeight);
           }
@@ -481,6 +543,19 @@ export function ExportButton({ className = "flex items-center justify-center w-1
             else if (element.animationOut === 'fade-zoom-out') { currentScale = 0.8 + 0.2 * easedProgress; currentOpacity = element.opacity * easedProgress; }
           }
 
+
+          if (element.mediaEffect && element.mediaEffect !== 'none') {
+            const totalDuration = element.endTime - element.startTime;
+            if (totalDuration > 0) {
+              const progress = Math.max(0, Math.min(1, timeSinceStart / totalDuration));
+              if (element.mediaEffect === 'parallax-zoom-in' || element.mediaEffect === 'zoom-in' || element.mediaEffect === 'parallax-slow') {
+                 currentScale *= (1 + 0.15 * progress);
+              } else if (element.mediaEffect === 'parallax-zoom-out' || element.mediaEffect === 'zoom-out' || element.mediaEffect === 'parallax-fast') {
+                 currentScale *= (1.15 - 0.15 * progress);
+              }
+            }
+          }
+
           ctx.save();
           const centerX = currentX + element.width / 2;
           const centerY = currentY + element.height / 2;
@@ -496,7 +571,7 @@ export function ExportButton({ className = "flex items-center justify-center w-1
             ctx.fillRect(0, 0, element.width, element.height);
           } else if (element.type === 'text') {
             let renderedText = element.content;
-            const effects = [element.textEffect, element.textEffect2, element.textEffect3].filter(Boolean) as string[];
+            const effects = [element.textEffect].filter(Boolean) as string[];
             const isTypewriter = element.animationIn === 'typewriter' || effects.includes('write-on');
             const isWordEffect = effects.some(e => ['fly-words', 'fade-words', 'zoom-words'].includes(e));
             const textEffectDuration = Math.min(element.endTime - element.startTime, Math.max(1000, element.content.length * 50));
@@ -516,11 +591,11 @@ export function ExportButton({ className = "flex items-center justify-center w-1
             if (effects.includes('shiver')) {
               dx = (Math.random() - 0.5) * 6;
               dy = (Math.random() - 0.5) * 6;
-            } else if (effects.includes('flicker')) {
+            } if (effects.includes('flicker')) {
               if (Math.random() > 0.8) renderOpacity = renderOpacity * 0.3;
-            } else if (effects.includes('glitch')) {
+            } if (effects.includes('glitch')) {
               if (Math.random() > 0.8) {
-                 dx = (Math.random() - 0.5) * 15;
+                 dx += (Math.random() - 0.5) * 15;
               }
             }
 
@@ -532,16 +607,20 @@ export function ExportButton({ className = "flex items-center justify-center w-1
             ctx.fillStyle = element.color || '#ffffff';
             ctx.textBaseline = 'middle';
             
-            if (effects.includes('bloom')) {
-              ctx.shadowColor = element.color || '#ffffff';
-              ctx.shadowBlur = 20;
-            } else if (effects.includes('neon')) {
-              ctx.shadowColor = element.color || '#ffffff';
-              ctx.shadowBlur = 40;
-            } else {
-              ctx.shadowColor = 'transparent';
-              ctx.shadowBlur = 0;
+            // Shadows will be applied iteratively during drawing
+            
+            const isOutline = effects.includes('outline');
+            if (isOutline) {
+              ctx.lineWidth = 2 * scale;
+              ctx.strokeStyle = element.color || '#ffffff';
+              ctx.fillStyle = 'transparent';
             }
+            
+            if (effects.includes('wave')) {
+               const waveProgress = (time % 2000) / 2000;
+               dy += Math.sin(waveProgress * Math.PI * 2) * 5 * scale;
+            }
+
             
             const paragraphs = (renderedText || '').split('\n');
             const lines: string[] = [];
@@ -575,10 +654,28 @@ export function ExportButton({ className = "flex items-center justify-center w-1
             lines.forEach(line => {
               if (!isWordEffect) {
                 ctx.textAlign = 'center';
-                ctx.fillText(line, element.width / 2 + dx, startY + dy);
-                if (effects.includes('bloom') || effects.includes('neon')) {
-                   ctx.fillText(line, element.width / 2 + dx, startY + dy);
+                const drawTextFn = () => isOutline ? ctx.strokeText(line, element.width / 2 + dx, startY + dy) : ctx.fillText(line, element.width / 2 + dx, startY + dy);
+                
+                // Base shadow resets
+                ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+                
+                if (effects.includes('drop-shadow')) {
+                  ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4 * scale;
+                  drawTextFn();
+                  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
                 }
+                if (effects.includes('bloom')) {
+                  ctx.shadowColor = element.color || '#ffffff'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 0;
+                  drawTextFn();
+                  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+                }
+                if (effects.includes('neon')) {
+                  ctx.shadowColor = element.color || '#ffffff'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 0;
+                  drawTextFn();
+                  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+                }
+                // Final solid draw
+                drawTextFn();
               } else {
                 const words = line.split(' ');
                 const lineWidth = ctx.measureText(line).width;
@@ -612,10 +709,10 @@ export function ExportButton({ className = "flex items-center justify-center w-1
                   if (effects.includes('fly-words')) {
                     wordDy += (1 - p) * 50;
                     wordRenderOp *= p;
-                  } else if (effects.includes('zoom-words')) {
+                  } if (effects.includes('zoom-words')) {
                     scale = 0.2 + p * 0.8;
                     wordRenderOp *= p;
-                  } else if (effects.includes('fade-words')) {
+                  } if (effects.includes('fade-words')) {
                     wordRenderOp *= p;
                   }
                   
@@ -623,10 +720,26 @@ export function ExportButton({ className = "flex items-center justify-center w-1
                   ctx.translate(currentX + w / 2 + wordDx, startY + wordDy);
                   ctx.scale(scale, scale);
                   ctx.textAlign = 'center';
-                  ctx.fillText(word, 0, 0);
-                  if (effects.includes('bloom') || effects.includes('neon')) {
-                     ctx.fillText(word, 0, 0);
+                  const drawWordFn = () => isOutline ? ctx.strokeText(word, 0, 0) : ctx.fillText(word, 0, 0);
+                  
+                  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+                  
+                  if (effects.includes('drop-shadow')) {
+                    ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4 * scale;
+                    drawWordFn();
+                    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
                   }
+                  if (effects.includes('bloom')) {
+                    ctx.shadowColor = element.color || '#ffffff'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 0;
+                    drawWordFn();
+                    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+                  }
+                  if (effects.includes('neon')) {
+                    ctx.shadowColor = element.color || '#ffffff'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 0;
+                    drawWordFn();
+                    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+                  }
+                  drawWordFn();
                   ctx.restore();
                   
                   currentX += w + spaceWidth;
@@ -638,6 +751,8 @@ export function ExportButton({ className = "flex items-center justify-center w-1
             // reset shadow
             ctx.shadowColor = 'transparent';
             ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
           } else if (element.type === 'image') {
             const img = imageCache[element.content];
             if (img) {
@@ -655,21 +770,96 @@ export function ExportButton({ className = "flex items-center justify-center w-1
                 sy = (img.height - sHeight) / 2;
               }
               ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, element.width, element.height);
+              if (element.mediaDimness !== undefined && element.mediaDimness > 0) {
+                 ctx.fillStyle = 'black';
+                 ctx.globalAlpha = element.mediaDimness * currentOpacity;
+                 ctx.fillRect(0, 0, element.width, element.height);
+              }
             }
           }
 
           ctx.restore();
         });
 
+
         ctx.restore();
 
+        // Render global overlays (grid, keylight, post-processing)
+        if (gridOverlay !== 'none') {
+           ctx.save();
+           ctx.globalCompositeOperation = 'overlay';
+           ctx.globalAlpha = 0.3 * 0.2;
+           const gridSize = (gridOverlay === 'large' ? 150 : 50) * scale;
+           ctx.strokeStyle = gridColor || '#ffffff';
+           ctx.lineWidth = 1;
+           ctx.beginPath();
+           for (let x = 0; x <= targetWidth; x += gridSize) {
+              ctx.moveTo(x, 0); ctx.lineTo(x, targetHeight);
+           }
+           for (let y = 0; y <= targetHeight; y += gridSize) {
+              ctx.moveTo(0, y); ctx.lineTo(targetWidth, y);
+           }
+           ctx.stroke();
+           ctx.restore();
+        }
+
+        if (keylightType !== 'none') {
+           ctx.save();
+           ctx.globalCompositeOperation = 'screen';
+           ctx.globalAlpha = 0.8;
+           const grad = keylightType === 'up' 
+             ? ctx.createLinearGradient(0, targetHeight, 0, 0)
+             : ctx.createLinearGradient(0, 0, 0, targetHeight);
+           grad.addColorStop(0, 'rgba(0,0,0,0)');
+           grad.addColorStop(0.4, 'rgba(0,0,0,0)');
+           grad.addColorStop(1, keylightColor || '#ffffff');
+           ctx.fillStyle = grad;
+           ctx.fillRect(0, 0, targetWidth, targetHeight);
+           ctx.restore();
+        }
+
+        if (postProcessingFx !== 'none') {
+           ctx.save();
+           ctx.globalCompositeOperation = 'overlay';
+           ctx.globalAlpha = 0.3;
+           if (postProcessingFx === 'vhs') {
+              ctx.fillStyle = 'rgba(0,0,0,0.1)';
+              for (let y = 0; y < targetHeight; y += 4 * scale) {
+                 ctx.fillRect(0, y + 2 * scale, targetWidth, 2 * scale);
+              }
+           } else if (postProcessingFx === 'crt') {
+              ctx.fillStyle = 'rgba(0,0,0,0.25)';
+              for (let y = 0; y < targetHeight; y += 4 * scale) {
+                 ctx.fillRect(0, y + 2 * scale, targetWidth, 2 * scale);
+              }
+              ctx.globalAlpha = 0.05;
+              for (let x = 0; x < targetWidth; x += 6 * scale) {
+                 ctx.fillStyle = 'red'; ctx.fillRect(x, 0, 2 * scale, targetHeight);
+                 ctx.fillStyle = 'green'; ctx.fillRect(x+2 * scale, 0, 2 * scale, targetHeight);
+                 ctx.fillStyle = 'blue'; ctx.fillRect(x+4 * scale, 0, 2 * scale, targetHeight);
+              }
+           } else if (postProcessingFx === 'noise') {
+              const noiseImg = imageCache['noise_svg_fx'];
+              if (noiseImg) {
+                 const pattern = ctx.createPattern(noiseImg, 'repeat');
+                 if (pattern) {
+                    ctx.fillStyle = pattern;
+                    ctx.fillRect(0, 0, targetWidth, targetHeight);
+                 }
+              }
+           }
+           ctx.restore();
+        }
+
+        if (encoderError) throw new Error('Video encoder error: ' + encoderError.message);
         const frame = new VideoFrame(hiddenCanvas, { timestamp: i * 1e6 / fps });
         videoEncoder.encode(frame, { keyFrame: i % 30 === 0 });
         frame.close();
 
         setProgress(i / totalFrames);
         if (i % 30 === 0) {
-          setExportLogs(prev => [...prev, `> Rendered frame ${i} of ${totalFrames}`]);
+          const pct = Math.round((i / totalFrames) * 100);
+          setExportLogs(prev => [...prev, `> Rendered frame ${i}/${totalFrames} (${pct}%) - Size: ${targetWidth}x${targetHeight}`]);
         }
         if (i % 5 === 0) {
           await new Promise(r => setTimeout(r, 0)); // yield
@@ -714,13 +904,81 @@ export function ExportButton({ className = "flex items-center justify-center w-1
   return (
     <>
       <button
-        onClick={handleExport}
+        onClick={() => setShowSettingsModal(true)}
         disabled={isExporting}
         title="Export Video"
         className={className}
       >
-        <Download size={iconSize} />
+        <Upload size={iconSize} className="text-stone-400 group-hover:scale-110 transition-transform group-hover:text-[var(--color-accent)]" />
+        {showText && <span className="text-[10px] font-medium leading-tight text-center truncate w-full">Export</span>}
       </button>
+
+      <AnimatePresence>
+        {showSettingsModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4"
+          >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="glass-panel-heavy text-text-main w-full max-w-sm rounded-[24px] flex flex-col p-6 pointer-events-auto shadow-none border float-border"
+            >
+              <div className="flex items-center justify-between mb-6">
+                 <h3 className="text-xl font-bold flex items-center gap-2"><Settings size={20} className="text-[var(--color-accent)]" /> Export Settings</h3>
+                 <button onClick={() => setShowSettingsModal(false)} className="w-8 h-8 flex items-center justify-center bg-button-bg hover:bg-button-hover rounded-xl transition-colors"><X size={16} /></button>
+              </div>
+
+              <div className="flex flex-col gap-4 mb-8">
+                 <div className="flex flex-col gap-2">
+                    <label className="text-sm font-semibold text-text-muted">Resolution</label>
+                    <CustomSelect 
+                       value={resolution}
+                       onChange={(val) => setResolution(val)}
+                       options={[
+                         { value: '720p', label: '720p (HD)' },
+                         { value: '1080p', label: '1080p (FHD)' },
+                         { value: '4k', label: '4K (UHD)' },
+                         { value: '8k', label: '8K (FUHD)' }
+                       ]}
+                    />
+                 </div>
+                 <div className="flex flex-col gap-2">
+                    <label className="text-sm font-semibold text-text-muted">Framerate (FPS)</label>
+                    <CustomSelect 
+                       value={fps.toString()}
+                       onChange={(val) => setFps(parseInt(val, 10))}
+                       options={[
+                         { value: '12', label: '12 fps' },
+                         { value: '24', label: '24 fps (Cinematic)' },
+                         { value: '30', label: '30 fps (Standard)' },
+                         { value: '60', label: '60 fps (Smooth)' },
+                         { value: '90', label: '90 fps' },
+                         { value: '120', label: '120 fps' }
+                       ]}
+                    />
+                 </div>
+              </div>
+
+              <button 
+                onClick={() => {
+                   setShowSettingsModal(false);
+                   cancelRef.current = false;
+                   handleExport();
+                }}
+                className="w-full py-3 bg-[var(--color-accent)] text-text-main font-bold rounded-xl hover:opacity-90 transition-opacity"
+              >
+                Start Export
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {isExporting && (
@@ -743,6 +1001,12 @@ export function ExportButton({ className = "flex items-center justify-center w-1
               </div>
               <h3 className="text-xl font-bold mb-2">Exporting Video</h3>
               <p className="text-sm text-text-muted mb-6">Please wait while your video is being rendered. This might take a minute.</p>
+              <button 
+                onClick={() => { cancelRef.current = true; }} 
+                className="mb-4 px-4 py-2 bg-red-500/20 text-red-500 hover:bg-red-500/30 rounded-xl font-bold transition-colors w-full border border-red-500/30"
+              >
+                Cancel Export
+              </button>
               
                             <div className="w-full bg-[var(--theme-input-bg)] rounded-full h-3 mb-2 overflow-hidden border border-panel-border">
                 <div 

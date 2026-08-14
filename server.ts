@@ -11,43 +11,65 @@ async function startServer() {
 
   app.use(express.json());
 
-  app.post("/api/gemini-tts", async (req, res) => {
-    const { apiKey, text, voice, model } = req.body;
+    app.all("/api/gemini-tts", async (req, res) => {
+    const text = req.method === "POST" ? req.body.text : req.query.text;
+    const voice = req.method === "POST" ? req.body.voice : req.query.voice;
+    const model = req.method === "POST" ? req.body.model : req.query.model;
+    const apiKey = req.method === "POST" ? req.body.apiKey : req.query.apiKey;
     
     if (!text) return res.status(400).send("Text is required");
     
-    const key = apiKey || process.env.GEMINI_API_KEY;
+    let key = apiKey || process.env.GEMINI_API_KEY;
+    if (key === "undefined" || key === "null") key = process.env.GEMINI_API_KEY;
     if (!key) {
       return res.status(401).send("Gemini API key is required");
     }
 
-    try {
-      const ai = new GoogleGenAI({
-        apiKey: key,
-        httpOptions: {
-          headers: { 'User-Agent': 'aistudio-build' }
-        }
-      });
-
-      const response = await ai.models.generateContent({
-        model: model || "gemini-3.1-flash-tts-preview",
-        contents: [{ parts: [{ text: text }] }],
-        config: {
-          responseModalities: [Modality.AUDIO],
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: { voiceName: voice || 'Kore' },
+        try {
+      const doRequest = async (useKey) => {
+        const ai = new GoogleGenAI({
+          apiKey: useKey.trim(),
+          httpOptions: {
+            headers: { 'User-Agent': 'aistudio-build' }
+          }
+        });
+        return await ai.models.generateContent({
+          model: model || "gemini-3.1-flash-tts-preview",
+          contents: [{ parts: [{ text: text }] }],
+          config: {
+            responseModalities: [Modality.AUDIO],
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: { voiceName: voice || 'Kore' },
+              },
             },
           },
-        },
-      });
+        });
+      };
+
+      let response;
+      try {
+        response = await doRequest(key);
+      } catch (e) {
+        // If the key is invalid and it's not the server's default key, try falling back to the server key
+        if (e.message && (e.message.includes('API key not valid') || e.message.includes('API_KEY_INVALID'))) {
+          const serverKey = process.env.GEMINI_API_KEY;
+          if (serverKey && serverKey !== key) {
+            console.log("User API key invalid, falling back to server key. Server key exists:", !!serverKey);
+            response = await doRequest(serverKey);
+          } else {
+            throw e;
+          }
+        } else {
+          throw e;
+        }
+      }
 
       const inlineData = response.candidates?.[0]?.content?.parts?.[0]?.inlineData;
       const base64Audio = inlineData?.data;
       if (base64Audio) {
         let audioData = base64Audio;
         if (inlineData.mimeType && inlineData.mimeType.includes("audio/pcm")) {
-            // It's raw PCM, need to prepend WAV header
             const pcmBuffer = Buffer.from(base64Audio, 'base64');
             const sampleRate = 24000;
             const numChannels = 1;
@@ -59,11 +81,11 @@ async function startServer() {
             wavHeader.write('WAVE', 8);
             wavHeader.write('fmt ', 12);
             wavHeader.writeUInt32LE(16, 16);
-            wavHeader.writeUInt16LE(1, 20); // PCM
+            wavHeader.writeUInt16LE(1, 20);
             wavHeader.writeUInt16LE(numChannels, 22);
             wavHeader.writeUInt32LE(sampleRate, 24);
-            wavHeader.writeUInt32LE(sampleRate * numChannels * (bitsPerSample / 8), 28); // byte rate
-            wavHeader.writeUInt16LE(numChannels * (bitsPerSample / 8), 32); // block align
+            wavHeader.writeUInt32LE(sampleRate * numChannels * (bitsPerSample / 8), 28);
+            wavHeader.writeUInt16LE(numChannels * (bitsPerSample / 8), 32);
             wavHeader.writeUInt16LE(bitsPerSample, 34);
             wavHeader.write('data', 36);
             wavHeader.writeUInt32LE(pcmBuffer.length, 40);
@@ -71,51 +93,82 @@ async function startServer() {
             const wavBuffer = Buffer.concat([wavHeader, pcmBuffer]);
             audioData = wavBuffer.toString('base64');
         }
-        res.json({ audio: audioData });
+        
+        if (req.method === "GET") {
+          const buffer = Buffer.from(audioData, 'base64');
+          res.writeHead(200, {
+            'Content-Type': 'audio/wav',
+            'Content-Length': buffer.length
+          });
+          res.end(buffer);
+        } else {
+          res.json({ audio: audioData });
+        }
       } else {
         res.status(500).send("No audio data returned from Gemini");
       }
-    } catch (e: any) {
+    } catch (e) {
       console.error("Gemini TTS Error:", e);
-      res.status(500).send(e.message || "Error generating voice");
+      res.status(400).send(e.message || "Error generating voice");
     }
   });
 
-  app.get("/api/tts", (req, res) => {
+  app.get("/api/check-env", (req, res) => { res.send(process.env.GEMINI_API_KEY || "NONE"); });
+  app.get("/api/tts", async (req, res) => {
     const text = req.query.text as string;
-    const lang = (req.query.lang as string) || "en";
-    const voice = (req.query.voice as string) || "";
+    const lang = req.query.lang || "en";
     
     if (!text) {
       return res.status(400).send("Text is required");
     }
 
-    const targetUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=${lang}&client=tw-ob`;
-    
-    https.get(targetUrl, (proxyRes) => {
-      if (proxyRes.statusCode !== 200) {
-         return res.status(proxyRes.statusCode || 500).send("Error generating TTS from Google");
+    try {
+      const fetchTTSChunk = (chunk, chunkLang) => {
+        return new Promise((resolve, reject) => {
+          const targetUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${chunkLang}&client=tw-ob`;
+          https.get(targetUrl, (proxyRes) => {
+            if (proxyRes.statusCode !== 200) {
+              return reject(new Error(`Google TTS failed with status ${proxyRes.statusCode}`));
+            }
+            const data = [];
+            proxyRes.on("data", c => data.push(c));
+            proxyRes.on("end", () => resolve(Buffer.concat(data)));
+          }).on("error", reject);
+        });
+      };
+
+      const chunks = [];
+      let currentChunk = "";
+      const words = text.split(" ");
+      for (const word of words) {
+        if (currentChunk.length + word.length > 150) {
+          chunks.push(currentChunk);
+          currentChunk = word + " ";
+        } else {
+          currentChunk += word + " ";
+        }
+      }
+      if (currentChunk) chunks.push(currentChunk);
+      
+      const buffers = [];
+      for (const chunk of chunks) {
+         buffers.push(await fetchTTSChunk(chunk.trim(), lang));
       }
       
-      const data: Buffer[] = [];
-      proxyRes.on('data', chunk => data.push(chunk));
-      proxyRes.on('end', () => {
-        const buffer = Buffer.concat(data);
-        res.writeHead(200, {
-          'Content-Type': proxyRes.headers['content-type'] || 'audio/mpeg',
-          'Content-Length': buffer.length,
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        });
-        res.end(buffer);
+      const combined = Buffer.concat(buffers);
+      res.writeHead(200, {
+        "Content-Type": "audio/mpeg",
+        "Content-Length": combined.length,
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
       });
-    }).on('error', (err) => {
-      console.error('TTS Proxy Error:', err);
+      res.end(combined);
+    } catch (e) {
+      console.error("TTS Proxy Error:", e);
       res.status(500).send("Error generating TTS");
-    });
+    }
   });
-
   app.get("/api/translate", (req, res) => {
     const text = req.query.text as string;
     const targetLang = (req.query.tl as string) || "en";

@@ -201,14 +201,14 @@ export function Canvas() {
         )}
         
         {gridOverlay !== 'none' && (
-          <div className="absolute inset-0 z-0 pointer-events-none mix-blend-overlay opacity-30" style={{
+          <div className="absolute inset-0 z-20 pointer-events-none mix-blend-overlay opacity-30" style={{
             backgroundImage: `linear-gradient(to right, ${hexToRgba(gridColor, 0.2)} 1px, transparent 1px), linear-gradient(to bottom, ${hexToRgba(gridColor, 0.2)} 1px, transparent 1px)`,
             backgroundSize: gridOverlay === 'large' ? '150px 150px' : '50px 50px'
           }} />
         )}
         
         {keylightType !== 'none' && (
-          <div className="absolute inset-0 z-0 pointer-events-none mix-blend-screen opacity-80" style={{
+          <div className="absolute inset-0 z-20 pointer-events-none mix-blend-screen opacity-80" style={{
             backgroundImage: `linear-gradient(to ${keylightType === 'up' ? 'top' : 'bottom'}, transparent 40%, ${keylightColor})`
           }} />
         )}

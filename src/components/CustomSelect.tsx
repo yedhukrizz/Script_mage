@@ -34,7 +34,11 @@ export function CustomSelect({ value, onChange, options, className = "", placeho
       }
     };
     
-    const handleScroll = () => {
+    const handleScroll = (event: Event) => {
+      const portal = document.getElementById('custom-select-portal');
+      if (portal && portal.contains(event.target as Node)) {
+        return;
+      }
       setIsOpen(false);
     };
 

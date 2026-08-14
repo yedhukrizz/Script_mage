@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
 import { Trash2, Mic, Globe, Move, Type, Palette, Image as ImageIcon, Activity, Clock, SlidersHorizontal, Settings2, Play, X, Sparkles } from 'lucide-react';
 import { TTSModal } from './TTSModal';
+import { XYPad } from './XYPad';
 import { motion, AnimatePresence } from 'motion/react';
 import { CustomSelect } from './CustomSelect';
 import { ThickSlider } from './ThickSlider';
@@ -163,7 +164,7 @@ export function PropertiesPanel() {
   if (activeTab === 'tts' && !hasTTS) setActiveTab(null);
 
   return (
-    <div className="relative flex flex-col items-center pointer-events-auto" ref={containerRef} onMouseDown={(e) => e.stopPropagation()}>
+    <div className="relative flex flex-col items-end pointer-events-auto" ref={containerRef} onMouseDown={(e) => e.stopPropagation()}>
       
       {/* Pop-up Inspector Pill */}
       <AnimatePresence>
@@ -184,12 +185,21 @@ export function PropertiesPanel() {
               <>
                 {selectedElement.type !== 'audio' && (
                   <>
-                    <ThickSlider label="X Position" value={selectedElement.x} min={0} max={1920} onChange={(v: number) => handleChange('x', v, true)} onChangeStart={handleStart} unit="px" />
-                    <ThickSlider label="Y Position" value={selectedElement.y} min={0} max={1080} onChange={(v: number) => handleChange('y', v, true)} onChangeStart={handleStart} unit="px" />
-                    <ThickSlider label="Width" value={selectedElement.width} min={10} max={1000} onChange={(v: number) => handleChange('width', v, true)} onChangeStart={handleStart} unit="px" />
-                    <ThickSlider label="Height" value={selectedElement.height} min={10} max={1000} onChange={(v: number) => handleChange('height', v, true)} onChangeStart={handleStart} unit="px" />
-                    <ThickSlider label="Rotation" value={selectedElement.rotation} min={-180} max={180} onChange={(v: number) => handleChange('rotation', v, true)} onChangeStart={handleStart} unit="°" />
-                    <ThickSlider label="Opacity" value={selectedElement.opacity} min={0} max={1} step={0.01} onChange={(v: number) => handleChange('opacity', v, true)} onChangeStart={handleStart} />
+                    {selectedElement.type === 'text' ? (
+                       <>
+                         <XYPad element={selectedElement} />
+                         <ThickSlider label="Opacity" value={selectedElement.opacity} min={0} max={1} step={0.01} onChange={(v: number) => handleChange('opacity', v, true)} onChangeStart={handleStart} />
+                       </>
+                    ) : (
+                       <>
+                         <ThickSlider label="X Position" value={selectedElement.x} min={0} max={1920} onChange={(v: number) => handleChange('x', v, true)} onChangeStart={handleStart} unit="px" />
+                         <ThickSlider label="Y Position" value={selectedElement.y} min={0} max={1080} onChange={(v: number) => handleChange('y', v, true)} onChangeStart={handleStart} unit="px" />
+                         <ThickSlider label="Width" value={selectedElement.width} min={10} max={1000} onChange={(v: number) => handleChange('width', v, true)} onChangeStart={handleStart} unit="px" />
+                         <ThickSlider label="Height" value={selectedElement.height} min={10} max={1000} onChange={(v: number) => handleChange('height', v, true)} onChangeStart={handleStart} unit="px" />
+                         <ThickSlider label="Rotation" value={selectedElement.rotation} min={-180} max={180} onChange={(v: number) => handleChange('rotation', v, true)} onChangeStart={handleStart} unit="°" />
+                         <ThickSlider label="Opacity" value={selectedElement.opacity} min={0} max={1} step={0.01} onChange={(v: number) => handleChange('opacity', v, true)} onChangeStart={handleStart} />
+                       </>
+                    )}
                   </>
                 )}
               </>
@@ -307,45 +317,10 @@ export function PropertiesPanel() {
                           { value: 'flicker', label: 'Flicker (Continuous)' },
                           { value: 'bloom', label: 'Bloom (Continuous)' },
                           { value: 'neon', label: 'Neon Glow (Continuous)' },
-                          { value: 'glitch', label: 'Glitch (Continuous)' }
-                        ]}
-                        />
-                        <div className="flex items-center gap-2 mt-1 px-1">
-                          <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider">Stack 2</span>
-                        </div>
-                        <CustomSelect 
-                          value={selectedElement.textEffect2 || 'none'} 
-                          onChange={(val) => handleChange('textEffect2', val)}
-                          options={[
-                          { value: 'none', label: 'None' },
-                          { value: 'write-on', label: 'Write On (Typewriter)' },
-                          { value: 'fade-words', label: 'Appearing Words' },
-                          { value: 'fly-words', label: 'Flying Words' },
-                          { value: 'zoom-words', label: 'Zooming Words' },
-                          { value: 'shiver', label: 'Shiver (Continuous)' },
-                          { value: 'flicker', label: 'Flicker (Continuous)' },
-                          { value: 'bloom', label: 'Bloom (Continuous)' },
-                          { value: 'neon', label: 'Neon Glow (Continuous)' },
-                          { value: 'glitch', label: 'Glitch (Continuous)' }
-                        ]}
-                        />
-                        <div className="flex items-center gap-2 mt-1 px-1">
-                          <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider">Stack 3</span>
-                        </div>
-                        <CustomSelect 
-                          value={selectedElement.textEffect3 || 'none'} 
-                          onChange={(val) => handleChange('textEffect3', val)}
-                          options={[
-                          { value: 'none', label: 'None' },
-                          { value: 'write-on', label: 'Write On (Typewriter)' },
-                          { value: 'fade-words', label: 'Appearing Words' },
-                          { value: 'fly-words', label: 'Flying Words' },
-                          { value: 'zoom-words', label: 'Zooming Words' },
-                          { value: 'shiver', label: 'Shiver (Continuous)' },
-                          { value: 'flicker', label: 'Flicker (Continuous)' },
-                          { value: 'bloom', label: 'Bloom (Continuous)' },
-                          { value: 'neon', label: 'Neon Glow (Continuous)' },
-                          { value: 'glitch', label: 'Glitch (Continuous)' }
+                          { value: 'glitch', label: 'Glitch (Continuous)' },
+                          { value: 'drop-shadow', label: 'Drop Shadow' },
+                          { value: 'outline', label: 'Outline (Stroked)' },
+                          { value: 'wave', label: 'Wave (Continuous)' }
                         ]}
                         />
                       </div>

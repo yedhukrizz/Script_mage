@@ -96,7 +96,7 @@ export function ProjectMenu() {
     <div className="relative flex items-center justify-center z-50" ref={ref}>
       <button 
         onClick={() => setIsOpen(!isOpen)} 
-        className={`w-12 h-12 sm:w-14 sm:h-14 bg-button-bg text-text-main border border-panel-border rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all z-10 ${isOpen ? 'bg-[var(--color-accent)] border-[var(--color-accent)] text-white' : 'hover:bg-button-hover'}`}
+        className={`w-11 h-11 bg-button-bg text-text-main rounded-full border float-border flex items-center justify-center  hover:scale-105 active:scale-95 transition-all z-10 ${isOpen ? 'bg-[var(--color-accent)] border-[var(--color-accent)] text-white' : 'hover:bg-button-hover'}`}
         title="Project Menu"
       >
         <Menu size={24} />
@@ -109,7 +109,7 @@ export function ProjectMenu() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ duration: 0.2 }}
-            className="absolute bottom-[100%] left-0 mb-4 z-[100] w-[200px] glass-panel p-2 rounded-[24px] shadow-2xl max-h-[50vh] sm:max-h-[60vh] overflow-y-auto custom-scrollbar origin-bottom-left"
+            className="absolute bottom-[100%] left-0 mb-4 z-[100] w-[200px] glass-panel p-2 rounded-[24px] shadow-none border float-border max-h-[50vh] sm:max-h-[60vh] overflow-y-auto custom-scrollbar origin-bottom-left"
           >
           <div className="flex flex-col gap-1.5 w-full relative group/tools">
             <button 

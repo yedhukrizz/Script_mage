@@ -1,4 +1,11 @@
 export const TTS_VOICES = [
+  // Gemini 3.1 TTS Voices (Premium)
+  { id: 'gemini-kore', name: 'Kore (Calm & Professional)', lang: 'en', category: 'Gemini', voice: 'Kore' },
+  { id: 'gemini-puck', name: 'Puck (Energetic)', lang: 'en', category: 'Gemini', voice: 'Puck' },
+  { id: 'gemini-charon', name: 'Charon (Deep & Resonant)', lang: 'en', category: 'Gemini', voice: 'Charon' },
+  { id: 'gemini-fenrir', name: 'Fenrir (Intense)', lang: 'en', category: 'Gemini', voice: 'Fenrir' },
+  { id: 'gemini-aoede', name: 'Aoede (Soothing)', lang: 'en', category: 'Gemini', voice: 'Aoede' },
+  
   // Google Translate TTS (Standard)
   { id: 'en', name: 'English (Standard)', lang: 'en', category: 'English', voice: '' },
   { id: 'es', name: 'Spanish (Standard)', lang: 'es', category: 'Spanish', voice: '' },

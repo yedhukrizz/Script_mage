@@ -61,7 +61,7 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
 
   // Pair placeholders with closest text element
   const pairs = useMemo(() => {
-    const placeholders = elements.filter(el => el.isPlaceholder).sort((a, b) => a.startTime - b.startTime);
+    const placeholders = elements.filter(el => el.isPlaceholder || el.type === 'image' || el.type === 'video').sort((a, b) => a.startTime - b.startTime);
     const textElements = elements.filter(el => el.type === 'text').sort((a, b) => a.startTime - b.startTime);
 
     return placeholders.map(ph => {
@@ -211,7 +211,11 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
       });
 
       if (!res.ok) {
-        throw new Error(await res.text());
+        const errText = await res.text();
+        if (errText.includes('API key not valid') || errText.includes('API_KEY_INVALID')) {
+           throw new Error('Invalid Gemini API Key! Please check your Settings.');
+        }
+        throw new Error(errText);
       }
 
       const data = await res.json();
@@ -336,29 +340,31 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
         className="glass-panel w-full max-w-5xl max-h-[85vh] flex flex-col rounded-[24px] overflow-hidden relative shadow-2xl"
       >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 sm:p-6 border-b border-panel-border bg-panel-bg shrink-0 flex-wrap gap-4">
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)]/20 flex items-center justify-center text-[var(--color-accent)] shrink-0">
-            <ImageIcon size={20} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-lg sm:text-xl font-bold text-text-main truncate">Placeholder Gallery</h1>
-            <p className="text-xs sm:text-sm text-text-muted truncate">Generate prompts and add media for your timeline placeholders</p>
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between p-4 sm:p-6 border-b border-panel-border bg-panel-bg shrink-0 gap-4">
+        <div className="flex items-center justify-between gap-3 w-full lg:w-auto">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)]/20 flex items-center justify-center text-[var(--color-accent)] shrink-0">
+              <ImageIcon size={20} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold text-text-main truncate">Placeholder Gallery</h1>
+              <p className="text-xs sm:text-sm text-text-muted truncate">Generate prompts and add media for your timeline placeholders</p>
+            </div>
           </div>
           <button 
             onClick={onClose}
-            className="w-10 h-10 sm:hidden flex items-center justify-center bg-button-bg hover:bg-button-hover border border-panel-border rounded-xl text-text-muted transition-colors shrink-0"
+            className="w-10 h-10 lg:hidden flex items-center justify-center bg-button-bg hover:bg-button-hover border border-panel-border rounded-xl text-text-muted transition-colors shrink-0"
           >
             <X size={20} />
           </button>
         </div>
         
-        <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto flex-wrap">
-                    <div className="flex flex-wrap items-center gap-2 flex-1 sm:flex-initial relative" ref={bulkMenuRef}>
+        <div className="flex items-center gap-3 sm:gap-4 w-full lg:w-auto flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-2 w-full sm:w-auto md:w-auto justify-stretch sm:justify-start relative" ref={bulkMenuRef}>
             <button
               onClick={() => setShowBulkMenu(!showBulkMenu)}
               disabled={isBulkGenerating || pairs.filter(p => !p.placeholder.content).length === 0}
-              className="bg-[var(--color-accent)] hover:opacity-90 border border-transparent rounded-lg px-3 py-2 text-xs text-text-main outline-none focus:border-panel-border whitespace-nowrap disabled:opacity-50 flex items-center gap-2"
+              className="bg-[var(--color-accent)] w-full sm:w-auto justify-center hover:opacity-90 border border-transparent rounded-lg px-3 py-2 text-xs text-text-main outline-none focus:border-panel-border whitespace-nowrap disabled:opacity-50 flex items-center gap-2"
             >
               {isBulkGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
               Bulk Generate
@@ -388,7 +394,7 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2 flex-1 sm:flex-initial">
+          <div className="flex items-center gap-2 w-full sm:w-auto md:w-auto justify-stretch sm:justify-start">
             <span className="text-xs sm:text-sm text-text-muted font-medium whitespace-nowrap hidden sm:inline">Placement:</span>
             <div className="w-full sm:w-36">
               <CustomSelect 
@@ -403,7 +409,7 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
               />
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-1 sm:flex-initial relative" ref={enhancersMenuRef}>
+          <div className="flex items-center gap-2 w-full sm:w-auto md:w-auto justify-stretch sm:justify-start relative" ref={enhancersMenuRef}>
             <span className="text-xs sm:text-sm text-text-muted font-medium whitespace-nowrap hidden sm:inline">Enhancers:</span>
             <button
               onClick={() => setShowEnhancersMenu(!showEnhancersMenu)}
@@ -442,7 +448,7 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
           </div>
           <button 
             onClick={onClose}
-            className="w-10 h-10 hidden sm:flex items-center justify-center bg-button-bg hover:bg-button-hover border border-panel-border rounded-xl text-text-muted transition-colors shrink-0"
+            className="w-10 h-10 hidden lg:flex items-center justify-center bg-button-bg hover:bg-button-hover border border-panel-border rounded-xl text-text-muted transition-colors shrink-0"
           >
             <X size={20} />
           </button>
@@ -650,7 +656,7 @@ export function PlaceholderGallery({ onClose }: PlaceholderGalleryProps) {
           </div>
         )}
             </div>
-      </motion.div>
+    </motion.div>
     </motion.div>
   );
 }

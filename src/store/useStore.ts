@@ -61,6 +61,8 @@ interface EditorState {
   setTimelineExpanded: (expanded: boolean) => void;
   setTimelineMinimized: (minimized: boolean) => void;
   timelineTransparent: boolean;
+  timelineInteractionMode: 'full' | 'select' | 'pan';
+  setTimelineInteractionMode: (mode: 'full' | 'select' | 'pan') => void;
   timelineTrackpadMode: boolean;
   setTimelineTrackpadMode: (mode: boolean) => void;
   setTimelineTransparent: (transparent: boolean) => void;
@@ -245,6 +247,8 @@ export const useStore = create<EditorState>((set) => ({
   setTimelineExpanded: (expanded) => set({ timelineExpanded: expanded }),
   setTimelineMinimized: (minimized) => set({ timelineMinimized: minimized }),
   timelineTransparent: false,
+  timelineInteractionMode: 'pan' as 'full' | 'select' | 'pan',
+  setTimelineInteractionMode: (mode) => set({ timelineInteractionMode: mode }),
   timelineTrackpadMode: false,
   setTimelineTransparent: (transparent) => set({ timelineTransparent: transparent }),
   setTimelineTrackpadMode: (mode) => set({ timelineTrackpadMode: mode }),
@@ -254,7 +258,7 @@ export const useStore = create<EditorState>((set) => ({
   setTimelineZoom: (zoom) => set({ timelineZoom: zoom }),
   timelineLengthLock: false,
   setTimelineLengthLock: (lock) => set({ timelineLengthLock: lock }),
-  uiAccentColor: '#6366f1',
+  uiAccentColor: '#a3e635',
   setUiAccentColor: (color) => set({ uiAccentColor: color }),
   addElement: (element) => set((state) => ({
     past: [...state.past, state.elements].slice(-50),

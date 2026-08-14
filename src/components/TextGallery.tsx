@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { X, Type, Edit2, Check, LayoutTemplate, Palette, Sparkles, BoxSelect, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { CustomSelect } from './CustomSelect';
+import { ThickSlider } from './ThickSlider';
 
 interface TextGalleryProps {
   onClose: () => void;
@@ -23,7 +24,10 @@ const EFFECTS = [
   { value: 'flicker', label: 'Flicker (Continuous)' },
   { value: 'bloom', label: 'Bloom (Continuous)' },
   { value: 'neon', label: 'Neon Glow (Continuous)' },
-  { value: 'glitch', label: 'Glitch (Continuous)' }
+  { value: 'glitch', label: 'Glitch (Continuous)' },
+  { value: 'drop-shadow', label: 'Drop Shadow' },
+  { value: 'outline', label: 'Outline (Stroked)' },
+  { value: 'wave', label: 'Wave (Continuous)' }
 ];
 
 const COLORS = [
@@ -33,6 +37,8 @@ const COLORS = [
 export function TextGallery({ onClose }: TextGalleryProps) {
   const elements = useStore((state) => state.elements);
   const updateElement = useStore((state) => state.updateElement);
+  const globalTextScale = useStore((state) => state.globalTextScale);
+  const setGlobalTextScale = useStore((state) => state.setGlobalTextScale);
   const removeElement = useStore((state) => state.removeElement);
   const addToast = useStore((state) => state.addToast);
   const setSelectedElementId = useStore((state) => state.setSelectedElementId);
@@ -135,6 +141,20 @@ export function TextGallery({ onClose }: TextGalleryProps) {
           </div>
           
           <div className="hidden lg:block w-px bg-button-bg my-2" />
+        {/* Global Scale */}
+        <div className="flex-1 min-w-[200px] px-4 py-2 border-l border-panel-border flex flex-col justify-center">
+          <span className="text-[10px] text-text-muted opacity-80 font-bold uppercase tracking-wider mb-2">Global Size</span>
+          <ThickSlider 
+             label="Global Scale"
+             value={globalTextScale}
+             min={0.1}
+             max={3}
+             step={0.05}
+             onChange={setGlobalTextScale}
+             unit="x"
+          />
+        </div>
+        <div className="hidden lg:block w-px bg-button-bg my-2" />
           
           <div className="flex-1 min-w-[200px] px-2 py-1 flex flex-col justify-center">
             <span className="text-[10px] text-text-muted opacity-80 font-bold uppercase tracking-wider mb-1">Target Effect</span>
@@ -257,7 +277,7 @@ export function TextGallery({ onClose }: TextGalleryProps) {
           </div>
         )}
             </div>
-      </motion.div>
+    </motion.div>
     </motion.div>
   );
 }

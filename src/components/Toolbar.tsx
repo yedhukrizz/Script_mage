@@ -297,7 +297,7 @@ export function Toolbar() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className={`transition-all duration-300 flex flex-col max-h-[60vh] sm:max-h-[420px] w-[92vw] max-w-[360px] select-none ${isDraggingSlider ? "overflow-visible" : "glass-panel rounded-[24px] overflow-hidden"}`}
+              className={`transition-all duration-300 flex flex-col max-h-[60vh] sm:max-h-[420px] w-[92vw] max-w-[360px] select-none ${isDraggingSlider ? "overflow-visible" : "glass-panel rounded-[24px] border float-border shadow-none overflow-hidden"}`}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Active Submenu Header (Fixed outside scroll area) */}
@@ -626,22 +626,8 @@ export function Toolbar() {
           {/* FONT SUBMENU VIEW */}
           {activeSubMenu === 'font' && (
             <div className="flex flex-col gap-3">
-              <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider px-1">Global Font Scale</span>
 
-              <div className={`flex flex-col gap-1.5 p-4 rounded-xl border transition-all duration-300 ${isDraggingSlider ? 'bg-panel-bg  border-panel-border shadow-2xl scale-110 -translate-y-6 sm:-translate-x-12 z-50' : 'bg-[var(--theme-input-bg)] border-panel-border'}`}>
-                <ThickSlider 
-                  label="Global Font Size" 
-                  value={globalTextScale} 
-                  min={0.5} 
-                  max={3} 
-                  step={0.1} 
-                  onChange={setGlobalTextScale} 
-                  onChangeStart={handleSliderStart}
-                  onChangeEnd={handleSliderEnd}
-                  unit="x"
-                />
-              </div>
-              <div className={`flex flex-col gap-2.5 transition-opacity duration-300 ${isDraggingSlider ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+              <div className={`flex flex-col gap-1.5 p-4 rounded-xl border transition-all duration-300 ${isDraggingSlider ? 'bg-panel-bg  border-panel-border  scale-110 -translate-y-6 sm:-translate-x-12 z-50' : 'bg-[var(--theme-input-bg)] border-panel-border'}`}>
               <input 
                 type="text" 
                 placeholder="Search fonts..." 
@@ -796,15 +782,15 @@ export function Toolbar() {
                 <div className="flex bg-button-bg border border-panel-border rounded-lg overflow-hidden p-0.5">
                   <button 
                     onClick={() => setGridOverlay('none')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${gridOverlay === 'none' ? 'bg-panel-bg text-text-main shadow-sm border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${gridOverlay === 'none' ? 'bg-panel-bg text-text-main  border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
                   >None</button>
                   <button 
                     onClick={() => setGridOverlay('small')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${gridOverlay === 'small' ? 'bg-panel-bg text-text-main shadow-sm border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${gridOverlay === 'small' ? 'bg-panel-bg text-text-main  border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
                   >Small</button>
                   <button 
                     onClick={() => setGridOverlay('large')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${gridOverlay === 'large' ? 'bg-panel-bg text-text-main shadow-sm border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${gridOverlay === 'large' ? 'bg-panel-bg text-text-main  border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
                   >Large</button>
                 </div>
                 {gridOverlay !== 'none' && (
@@ -812,9 +798,9 @@ export function Toolbar() {
                     <label className="text-[10px] text-text-muted uppercase font-semibold">Grid Color</label>
                     <div className="flex flex-wrap gap-2 items-center">
                       {['#ffffff', '#000000', '#ff3366', '#33ccff', '#cc33ff', '#33ff99', '#ffcc00'].map(c => (
-                        <button key={'grid-'+c} onClick={() => setGridColor(c)} className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${gridColor === c ? 'border-[var(--color-accent)] shadow-md' : 'border-transparent shadow-sm'}`} style={{backgroundColor: c}} title={c} />
+                        <button key={'grid-'+c} onClick={() => setGridColor(c)} className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${gridColor === c ? 'border-[var(--color-accent)] ' : 'border-transparent '}`} style={{backgroundColor: c}} title={c} />
                       ))}
-                      <label className="w-7 h-7 rounded-full relative overflow-hidden cursor-pointer shadow-sm border-2 border-transparent hover:scale-110 transition-transform flex items-center justify-center bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 ml-1">
+                      <label className="w-7 h-7 rounded-full relative overflow-hidden cursor-pointer  border-2 border-transparent hover:scale-110 transition-transform flex items-center justify-center bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 ml-1">
                         <input type="color" value={gridColor} onChange={(e) => setGridColor(e.target.value)} className="absolute opacity-0 inset-0 w-full h-full cursor-pointer" title="Custom Color" />
                       </label>
                     </div>
@@ -829,15 +815,15 @@ export function Toolbar() {
                 <div className="flex bg-button-bg border border-panel-border rounded-lg overflow-hidden p-0.5">
                   <button 
                     onClick={() => setKeylightType('none')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${keylightType === 'none' ? 'bg-panel-bg text-text-main shadow-sm border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${keylightType === 'none' ? 'bg-panel-bg text-text-main  border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
                   >None</button>
                   <button 
                     onClick={() => setKeylightType('up')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${keylightType === 'up' ? 'bg-panel-bg text-text-main shadow-sm border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${keylightType === 'up' ? 'bg-panel-bg text-text-main  border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
                   >Bottom-Up</button>
                   <button 
                     onClick={() => setKeylightType('down')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${keylightType === 'down' ? 'bg-panel-bg text-text-main shadow-sm border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${keylightType === 'down' ? 'bg-panel-bg text-text-main  border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
                   >Top-Down</button>
                 </div>
                 {keylightType !== 'none' && (
@@ -845,9 +831,9 @@ export function Toolbar() {
                     <label className="text-[10px] text-text-muted uppercase font-semibold">Keylight Color</label>
                     <div className="flex flex-wrap gap-2 items-center">
                       {['#ffffff', '#000000', '#ff3366', '#33ccff', '#cc33ff', '#33ff99', '#ffcc00'].map(c => (
-                        <button key={'keylight-'+c} onClick={() => setKeylightColor(c)} className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${keylightColor === c ? 'border-[var(--color-accent)] shadow-md' : 'border-transparent shadow-sm'}`} style={{backgroundColor: c}} title={c} />
+                        <button key={'keylight-'+c} onClick={() => setKeylightColor(c)} className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${keylightColor === c ? 'border-[var(--color-accent)] ' : 'border-transparent '}`} style={{backgroundColor: c}} title={c} />
                       ))}
-                      <label className="w-7 h-7 rounded-full relative overflow-hidden cursor-pointer shadow-sm border-2 border-transparent hover:scale-110 transition-transform flex items-center justify-center bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 ml-1">
+                      <label className="w-7 h-7 rounded-full relative overflow-hidden cursor-pointer  border-2 border-transparent hover:scale-110 transition-transform flex items-center justify-center bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 ml-1">
                         <input type="color" value={keylightColor} onChange={(e) => setKeylightColor(e.target.value)} className="absolute opacity-0 inset-0 w-full h-full cursor-pointer" title="Custom Color" />
                       </label>
                     </div>
@@ -1034,19 +1020,19 @@ export function Toolbar() {
                 <div className="flex bg-button-bg border border-panel-border rounded-lg overflow-hidden p-0.5">
                   <button 
                     onClick={() => setUiTheme('light')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${uiTheme === 'light' ? 'bg-panel-bg text-text-main shadow-sm border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${uiTheme === 'light' ? 'bg-panel-bg text-text-main  border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
                   >
                     Light
                   </button>
                   <button 
                     onClick={() => setUiTheme('dark')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${uiTheme === 'dark' ? 'bg-panel-bg text-text-main shadow-sm border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${uiTheme === 'dark' ? 'bg-panel-bg text-text-main  border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
                   >
                     Dark
                   </button>
                   <button 
                     onClick={() => setUiTheme('black')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${uiTheme === 'black' ? 'bg-panel-bg text-text-main shadow-sm border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${uiTheme === 'black' ? 'bg-panel-bg text-text-main  border border-panel-border' : 'text-text-muted hover:text-text-main hover:bg-button-hover'}`}
                   >
                     OLED
                   </button>
@@ -1056,21 +1042,7 @@ export function Toolbar() {
               
 
               </div>
-              <div className={`flex flex-col gap-1 transition-all duration-300 p-4 rounded-xl ${isDraggingSlider ? 'glass-panel-heavy shadow-2xl scale-110 -translate-y-6 sm:-translate-x-12 z-50' : ''}`}>
-                <ThickSlider 
-                  label="Global Text Scale" 
-                  value={globalTextScale} 
-                  min={0.1} 
-                  max={3} 
-                  step={0.05} 
-                  onChange={setGlobalTextScale} 
-                  onChangeStart={handleSliderStart}
-                  onChangeEnd={handleSliderEnd}
-                  unit="x"
-                />
-              </div>
-              <div className={`flex flex-col gap-3 transition-opacity duration-300 ${isDraggingSlider ? 'opacity-0 hidden' : 'opacity-100'}`}>
-
+              <div className={`flex flex-col gap-1 transition-all duration-300 p-4 rounded-xl ${isDraggingSlider ? 'glass-panel-heavy  scale-110 -translate-y-6 sm:-translate-x-12 z-50' : ''}`}>
               {backgroundAudioUrl && (
                 <div className="flex flex-col gap-1 border-t border-panel-border pt-2">
                   <div className="flex justify-between items-center">
@@ -1093,7 +1065,7 @@ export function Toolbar() {
                     applyDefaultsToProject();
                     addToast('Applied current defaults to project elements', 'success');
                   }} 
-                  className="w-full bg-[var(--color-accent)] hover:opacity-90 text-white px-3 py-2 rounded-xl font-semibold transition-all shadow-sm text-xs flex items-center justify-center gap-2"
+                  className="w-full bg-[var(--color-accent)] hover:opacity-90 text-white px-3 py-2 rounded-xl font-semibold transition-all  text-xs flex items-center justify-center gap-2"
                 >
                   Apply Defaults to Current Elements
                 </button>
@@ -1124,14 +1096,14 @@ export function Toolbar() {
       <div className="relative flex items-center justify-center z-[70]">
         <button 
           onClick={toggleOpen} 
-          className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all overflow-hidden ${isOpen ? 'bg-[var(--color-accent)] text-white' : 'bg-text-main text-app-bg'}`}
+          className={`relative w-11 h-11 rounded-full flex items-center justify-center  hover:scale-105 active:scale-95 transition-all overflow-hidden ${isOpen ? 'bg-[var(--color-accent)] text-white' : 'bg-text-main text-app-bg border float-border'}`}
           title="Tools & Add Menu"
         >
           <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${isOpen ? 'opacity-0 -rotate-90 scale-50' : 'opacity-100 rotate-0 scale-100'}`}>
-            <Wand2 size={24} />
+            <Plus size={20} strokeWidth={2.5} />
           </div>
           <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${isOpen ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 rotate-90 scale-50'}`}>
-            <X size={24} />
+            <X size={20} />
           </div>
         </button>
       </div>

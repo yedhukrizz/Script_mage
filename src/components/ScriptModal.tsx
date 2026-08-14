@@ -182,7 +182,7 @@ Rules:
             animationOut: placeholderDefaults.animationOut,
             easing: 'ease-in-out',
             trackColor: '#666666',
-            isPlaceholder: !imageUrl,
+            isPlaceholder: true,
             mediaEffect: placeholderDefaults.mediaEffect,
           });
         }

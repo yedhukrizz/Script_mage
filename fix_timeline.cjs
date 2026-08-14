@@ -1,10 +1,10 @@
 const fs = require('fs');
-let file = 'src/components/Timeline.tsx';
-let content = fs.readFileSync(file, 'utf8');
+let content = fs.readFileSync('src/components/Timeline.tsx', 'utf8');
 
-content = content.replace(/bg-white/g, 'bg-text-main');
-content = content.replace(/ring-white/g, 'ring-text-main');
-content = content.replace(/hover:text-white/g, 'hover:text-text-main');
-content = content.replace(/bg-button-bg0/g, 'bg-button-bg opacity-50');
+// Fix the import issue
+content = content.replace(/const \(timelineInteractionMode === 'pan'\) = useStore\(\(state\) => state\.\(timelineInteractionMode === 'pan'\)\);/g, "const timelineInteractionMode = useStore((state) => state.timelineInteractionMode);");
+content = content.replace(/const \(timelineInteractionMode === 'pan'\) = useStore\(state => state\.\(timelineInteractionMode === 'pan'\)\);/g, "");
 
-fs.writeFileSync(file, content);
+content = content.replace(/\[isDraggingPlayhead, duration, \(timelineInteractionMode === 'pan'\), isPanning, panStart\]/g, "[isDraggingPlayhead, duration, timelineInteractionMode, isPanning, panStart]");
+
+fs.writeFileSync('src/components/Timeline.tsx', content);

@@ -174,8 +174,8 @@ export const ElementRenderer: React.FC<{ element: EditorElement }> = ({ element 
   const renderContent = () => {
     switch (element.type) {
       case 'text':
-        const effects = [element.textEffect, element.textEffect2, element.textEffect3].filter(Boolean) as string[];
-        const textEffectClass = effects.filter(e => e !== 'none').map(e => `effect-${e}`).join(' ');
+        const effects = [element.textEffect].filter(Boolean) as string[];
+        const textEffectClass = element.textEffect && element.textEffect !== 'none' ? `effect-${element.textEffect}` : '';
         const fontFamily = element.fontFamily || 'Instrument Sans';
         
         let renderedText: React.ReactNode = element.content;
@@ -212,13 +212,17 @@ export const ElementRenderer: React.FC<{ element: EditorElement }> = ({ element 
               
               let style: React.CSSProperties = { display: 'inline-block', whiteSpace: 'pre-wrap' };
               
+              let transform = '';
               if (effects.includes('fly-words')) {
-                style.transform = `translateY(${(1 - p) * 50}px)`;
-                style.opacity = p;
-              } else if (effects.includes('fade-words')) {
-                style.opacity = p;
-              } else if (effects.includes('zoom-words')) {
-                style.transform = `scale(${0.2 + p * 0.8})`;
+                transform += ` translateY(${(1 - p) * 50}px)`;
+              }
+              if (effects.includes('zoom-words')) {
+                transform += ` scale(${0.2 + p * 0.8})`;
+              }
+              if (transform) {
+                style.transform = transform.trim();
+              }
+              if (effects.includes('fly-words') || effects.includes('zoom-words') || effects.includes('fade-words')) {
                 style.opacity = p;
               }
               
@@ -242,13 +246,13 @@ export const ElementRenderer: React.FC<{ element: EditorElement }> = ({ element 
                }
             }}
             className={`bg-transparent border-none outline-none w-full h-full flex items-center justify-center text-center resize-none whitespace-pre-wrap break-words ${textEffectClass}`}
-            style={{ color: element.color, fontSize: `${(element.fontSize || 32) * globalTextScale}px`, lineHeight: 1.5, fontWeight: element.fontWeight || 600, fontFamily: `"${fontFamily}", sans-serif` }}
+            style={{ color: element.color, '--effect-color': element.color, fontSize: `${(element.fontSize || 32) * globalTextScale}px`, lineHeight: 1.5, fontWeight: element.fontWeight || 600, fontFamily: `"${fontFamily}", sans-serif` } as React.CSSProperties}
           />
         ) : (
           <div
             onDoubleClick={() => setIsEditingText(true)}
             className={`w-full h-full flex items-center justify-center cursor-text text-center select-none ${textEffectClass}`}
-            style={{ color: element.color, fontSize: `${(element.fontSize || 32) * globalTextScale}px`, lineHeight: 1.5, fontWeight: element.fontWeight || 600, fontFamily: `"${fontFamily}", sans-serif` }}
+            style={{ color: element.color, '--effect-color': element.color, fontSize: `${(element.fontSize || 32) * globalTextScale}px`, lineHeight: 1.5, fontWeight: element.fontWeight || 600, fontFamily: `"${fontFamily}", sans-serif` } as React.CSSProperties}
           >
             <span className="whitespace-pre-wrap break-words w-full" style={{ display: 'block' }}>{renderedText}</span>
           </div>
@@ -256,7 +260,7 @@ export const ElementRenderer: React.FC<{ element: EditorElement }> = ({ element 
       case 'image':
         if (!element.content) {
           return (
-            <div className="w-full h-full bg-black pointer-events-none"></div>
+            <div className="w-full h-full pointer-events-none bg-gradient-to-br from-panel-bg via-button-bg to-panel-border opacity-50 shadow-inner"></div>
           );
         }
         return (
@@ -270,7 +274,7 @@ export const ElementRenderer: React.FC<{ element: EditorElement }> = ({ element 
       case 'video':
         if (!element.content) {
           return (
-            <div className="w-full h-full bg-black pointer-events-none"></div>
+            <div className="w-full h-full pointer-events-none bg-gradient-to-br from-panel-bg via-button-bg to-panel-border opacity-50 shadow-inner"></div>
           );
         }
         return (

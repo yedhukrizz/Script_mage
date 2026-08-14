@@ -41,6 +41,7 @@ export default function App() {
   const showTextGallery = useStore((state) => state.showTextGallery);
   const setShowTextGallery = useStore((state) => state.setShowTextGallery);
   const elements = useStore((state) => state.elements);
+  const geminiApiKey = useStore(state => state.geminiApiKey);
   const currentTime = useStore((state) => state.currentTime);
   const backgroundAudioUrl = useStore((state) => state.backgroundAudioUrl);
   const backgroundAudioVolume = useStore((state) => state.backgroundAudioVolume);
@@ -174,12 +175,20 @@ export default function App() {
                     lang = el.ttsVoice.split('-')[0] || 'en';
                   }
                   
-                  const audioUrl = `/api/tts?text=${encodeURIComponent(el.content)}&lang=${lang}${voiceParam}`;
+                  const audioUrl = `${voiceConfig?.category === 'Gemini' ? '/api/gemini-tts' : '/api/tts'}?text=${encodeURIComponent(el.content)}&lang=${lang}${voiceParam}${(useStore.getState().geminiApiKey ? '&apiKey=' + encodeURIComponent(useStore.getState().geminiApiKey) : '')}`;
                   // Set a placeholder to prevent multiple fetches
                   activeTTS.set(el.id, new Audio());
                   
-                  fetch(audioUrl).then(res => {
-                    if (!res.ok) throw new Error('TTS fetch failed');
+                  fetch(audioUrl).then(async res => {
+                    if (!res.ok) {
+                        const errText = await res.text();
+                        if (errText.includes('API key not valid') || errText.includes('API_KEY_INVALID')) {
+                             if (typeof addToast !== 'undefined') addToast('Invalid Gemini API Key! Please check your Settings.', 'error');
+                             else if (typeof useStore !== 'undefined') useStore.getState().addToast('Invalid Gemini API Key! Please check your Settings.', 'error');
+                             throw new Error('Invalid Gemini API Key! Please check your Settings.');
+                        }
+                        throw new Error(errText);
+                    }
                     const contentType = res.headers.get('content-type');
                     if (!contentType || !contentType.includes('audio')) {
                       throw new Error('TTS response is not audio (possibly blocked or invalid)');
@@ -317,7 +326,7 @@ export default function App() {
         )}
         <Canvas />
         {selectedElementId && (
-          <div className="absolute inset-0 pointer-events-none z-50 flex flex-col justify-end items-center pb-8">
+          <div className="absolute top-24 sm:top-28 right-4 sm:right-6 bottom-[100px] sm:bottom-[120px] pointer-events-none z-50 flex flex-col items-end justify-center overflow-y-visible hide-scrollbar">
             <div className="pointer-events-auto">
               <PropertiesPanel />
             </div>
@@ -336,12 +345,10 @@ export default function App() {
 
             {/* Floating Controls Anchor */}
       <div className="relative w-full z-[100] pointer-events-none">
-        <div className="absolute bottom-4 left-4 sm:left-6 right-4 sm:right-6 flex justify-between items-end">
-          <div className="flex items-end gap-3 sm:gap-4 pointer-events-auto">
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center items-end pointer-events-none">
+          <div className="flex items-end gap-2 pointer-events-auto">
             <ProjectMenu />
             <UndoRedoControls />
-          </div>
-          <div className="pointer-events-auto relative">
             <Toolbar />
           </div>
         </div>
@@ -365,6 +372,8 @@ export default function App() {
         {showGlobalTranslateModal && <TranslateModal onClose={() => setShowGlobalTranslateModal(false)} />}
         {showPlaceholderGallery && <PlaceholderGallery onClose={() => setShowPlaceholderGallery(false)} />}
         {showTextGallery && <TextGallery onClose={() => setShowTextGallery(false)} />}
+        
+        
         
         {showUnsavedModal && (
           <motion.div 

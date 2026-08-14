@@ -1,5 +1,22 @@
 const fs = require('fs');
-let app = fs.readFileSync('src/App.tsx', 'utf8');
-app = app.replace(/className="fixed inset-0 bg-black\/60  z-\[100\] flex items-center justify-center p-4"/, 
-  'className="fixed inset-0 bg-black/60 z-[150] flex items-center justify-center p-4"');
-fs.writeFileSync('src/App.tsx', app);
+let content = fs.readFileSync('src/App.tsx', 'utf8');
+
+const timelineOld = `<div className="flex-1 min-h-0 flex flex-col relative">
+          <Timeline />
+          <AnimatePresence>
+            {showTextGallery && <TextGallery onClose={() => setShowTextGallery(false)} />}
+            {showPlaceholderGallery && <PlaceholderGallery onClose={() => setShowPlaceholderGallery(false)} />}
+          </AnimatePresence>
+        </div>`;
+const timelineNew = `<div className="flex-1 min-h-0 flex flex-col">
+          <Timeline />
+        </div>`;
+content = content.replace(timelineOld, timelineNew);
+
+const globalModalsOld = `{showGlobalTranslateModal && <TranslateModal onClose={() => setShowGlobalTranslateModal(false)} />}`;
+const globalModalsNew = `{showGlobalTranslateModal && <TranslateModal onClose={() => setShowGlobalTranslateModal(false)} />}
+        {showPlaceholderGallery && <PlaceholderGallery onClose={() => setShowPlaceholderGallery(false)} />}
+        {showTextGallery && <TextGallery onClose={() => setShowTextGallery(false)} />}`;
+content = content.replace(globalModalsOld, globalModalsNew);
+
+fs.writeFileSync('src/App.tsx', content);

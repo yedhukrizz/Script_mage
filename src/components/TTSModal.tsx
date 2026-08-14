@@ -28,6 +28,7 @@ const LANG_MAP: Record<string, string> = {
 export function TTSModal({ element, onClose }: TTSModalProps) {
   const elements = useStore((state) => state.elements);
   const updateElement = useStore((state) => state.updateElement);
+  const geminiApiKey = useStore(state => state.geminiApiKey);
   const addToast = useStore((state) => state.addToast);
   
   const initialVoice = element?.ttsVoice && TTS_VOICES.some(v => v.id === element.ttsVoice) 
@@ -115,12 +116,18 @@ export function TTSModal({ element, onClose }: TTSModalProps) {
       lang = selectedVoiceURI || 'en';
     }
 
-    const audioUrl = `/api/tts?text=${encodeURIComponent(textToPreview)}&lang=${lang}${voiceParam}`;
+    const audioUrl = `${voiceConfig?.category === 'Gemini' ? '/api/gemini-tts' : '/api/tts'}?text=${encodeURIComponent(textToPreview)}&lang=${lang}${voiceParam}${geminiApiKey ? '&apiKey=' + encodeURIComponent(geminiApiKey) : ''}`;
     
     try {
       setIsLoadingPreview(true);
       const res = await fetch(audioUrl);
-      if (!res.ok) throw new Error('Failed to fetch audio');
+      if (!res.ok) {
+        const errText = await res.text();
+        if (errText.includes('API key not valid') || errText.includes('API_KEY_INVALID')) {
+            throw new Error('Invalid Gemini API Key! Please check your Settings.');
+        }
+        throw new Error('Failed to fetch audio: ' + errText);
+      }
       
       const blob = await res.blob();
       
@@ -178,7 +185,7 @@ export function TTSModal({ element, onClose }: TTSModalProps) {
         }
         
         addLog(`Fetching real audio duration for: "${text.substring(0, 20)}${text.length > 20 ? '...' : ''}"`);
-        const res = await fetch(`/api/tts?text=${encodeURIComponent(text)}&lang=${lang}${voiceParam}`);
+        const res = await fetch(`${voiceConfig?.category === 'Gemini' ? '/api/gemini-tts' : '/api/tts'}?text=${encodeURIComponent(text)}&lang=${lang}${voiceParam}${geminiApiKey ? '&apiKey=' + encodeURIComponent(geminiApiKey) : ''}`);
         if (res.ok) {
           const arrayBuffer = await res.arrayBuffer();
           const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -186,6 +193,12 @@ export function TTSModal({ element, onClose }: TTSModalProps) {
           const duration = (audioBuffer.duration * 1000) + timeBuffer;
           addLog(`  -> Real duration: ${Math.round(duration)}ms`);
           return duration;
+        } else {
+          const err = await res.text();
+          if (err.includes('API key not valid') || err.includes('API_KEY_INVALID')) {
+             throw new Error('Invalid Gemini API Key! Please check your Settings.');
+          }
+          throw new Error(err);
         }
       } catch (e: any) {
         addLog(`  -> Error getting real duration: ${e.message}`);

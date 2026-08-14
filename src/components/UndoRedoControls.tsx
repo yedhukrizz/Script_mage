@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../store/useStore';
-import { Undo2, Redo2, Heart, Hand } from 'lucide-react';
+import { Undo2, Redo2, Coffee, Hand, MousePointer2, MousePointerClick } from 'lucide-react';
 import { DonationModal } from './DonationModal';
 
 export function UndoRedoControls() {
@@ -8,8 +8,8 @@ export function UndoRedoControls() {
   const redo = useStore(state => state.redo);
   const past = useStore(state => state.past);
   const future = useStore(state => state.future);
-  const timelineTrackpadMode = useStore(state => state.timelineTrackpadMode);
-  const setTimelineTrackpadMode = useStore(state => state.setTimelineTrackpadMode);
+  const timelineInteractionMode = useStore(state => state.timelineInteractionMode);
+  const setTimelineInteractionMode = useStore(state => state.setTimelineInteractionMode);
   const [showDonation, setShowDonation] = useState(false);
 
   useEffect(() => {
@@ -26,6 +26,7 @@ export function UndoRedoControls() {
         redo();
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [undo, redo]);
@@ -36,32 +37,50 @@ export function UndoRedoControls() {
         <button 
           onClick={undo}
           disabled={past.length === 0}
-          className="w-12 h-12 sm:w-14 sm:h-14 bg-button-bg text-text-main border border-panel-border rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100 hover:bg-button-hover"
+          className="w-11 h-11 bg-button-bg text-text-main rounded-full border float-border flex items-center justify-center  hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100 hover:bg-button-hover"
           title="Undo (Ctrl+Z)"
         >
-          <Undo2 size={24} />
+          <Undo2 size={18} />
         </button>
         <button 
           onClick={redo}
           disabled={future.length === 0}
-          className="w-12 h-12 sm:w-14 sm:h-14 bg-button-bg text-text-main border border-panel-border rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100 hover:bg-button-hover"
+          className="w-11 h-11 bg-button-bg text-text-main rounded-full border float-border flex items-center justify-center  hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100 hover:bg-button-hover"
           title="Redo (Ctrl+Shift+Z)"
         >
-          <Redo2 size={24} />
+          <Redo2 size={18} />
         </button>
-        <button 
-          onClick={() => setTimelineTrackpadMode(!timelineTrackpadMode)}
-          className={`w-12 h-12 sm:w-14 sm:h-14 border rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all ml-2 ${timelineTrackpadMode ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]' : 'bg-button-bg text-text-muted border-panel-border hover:bg-button-hover'}`}
-          title={timelineTrackpadMode ? "Disable Timeline Pan (Trackpad Mode)" : "Enable Timeline Pan (Trackpad Mode)"}
-        >
-          <Hand size={24} className={timelineTrackpadMode ? "fill-white/20" : ""} />
-        </button>
+
+        <div className="flex bg-button-bg rounded-full overflow-hidden border float-border ml-2 h-11">
+           <button 
+             onClick={() => setTimelineInteractionMode('full')}
+             className={`w-11 flex items-center justify-center transition-all ${timelineInteractionMode === 'full' ? 'bg-[var(--color-accent)] text-white' : 'text-text-muted hover:bg-button-hover hover:text-text-main'}`}
+             title="Full Control (Move & Resize)"
+           >
+             <MousePointer2 size={18} />
+           </button>
+           <button 
+             onClick={() => setTimelineInteractionMode('select')}
+             className={`w-11 border-l border-r border-panel-border/30 flex items-center justify-center transition-all ${timelineInteractionMode === 'select' ? 'bg-[var(--color-accent)] text-white' : 'text-text-muted hover:bg-button-hover hover:text-text-main'}`}
+             title="Select Only (No Resize)"
+           >
+             <MousePointerClick size={18} />
+           </button>
+           <button 
+             onClick={() => setTimelineInteractionMode('pan')}
+             className={`w-11 flex items-center justify-center transition-all ${timelineInteractionMode === 'pan' ? 'bg-[var(--color-accent)] text-white' : 'text-text-muted hover:bg-button-hover hover:text-text-main'}`}
+             title="Pan Mode"
+           >
+             <Hand size={18} />
+           </button>
+        </div>
+
         <button 
           onClick={() => setShowDonation(true)}
-          className="w-12 h-12 sm:w-14 sm:h-14 bg-button-bg text-red-400 border border-panel-border rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all hover:bg-button-hover hover:text-red-500 hover:border-red-500/30"
+          className="w-11 h-11 bg-button-bg text-amber-500 rounded-full border float-border flex items-center justify-center  hover:scale-105 active:scale-95 transition-all hover:bg-button-hover hover:text-amber-400 hover:border-amber-500/30"
           title="Support the Project"
         >
-          <Heart size={24} fill="currentColor" />
+          <Coffee size={18} />
         </button>
       </div>
 

@@ -19,8 +19,6 @@ export interface EditorElement {
   fontSize?: number; // For text
   fontFamily?: string; // For text
   textEffect?: string; // For text
-  textEffect2?: string;
-  textEffect3?: string;
   fontWeight?: number; // For text
   trackColor?: string; // Color in timeline
   isPlaceholder?: boolean; // For placeholder elements behind grids
